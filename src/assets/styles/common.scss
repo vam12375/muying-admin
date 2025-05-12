@@ -1,0 +1,294 @@
+@import 'variables.scss';
+@import 'animate.css';
+
+/* 全局样式 */
+body {
+  font-family: $font-family;
+  font-size: $font-size-base;
+  color: $text-primary;
+  background-color: $bg-container;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: $bg-container;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(144, 147, 153, 0.3);
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: rgba(144, 147, 153, 0.5);
+  }
+}
+
+/* 基础动画类 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $animation-duration-base;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 滑动动画 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform $animation-duration-base;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+/* 缩放动画 */
+.scale-enter-active,
+.scale-leave-active {
+  transition: transform $animation-duration-base, opacity $animation-duration-base;
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+/* 页面容器 */
+.page-container {
+  padding: $spacing-large;
+  min-height: calc(100vh - #{$navbar-height} - #{$spacing-large} * 2);
+  border-radius: $border-radius-base;
+  background-color: $bg-primary;
+  box-shadow: $box-shadow-base;
+  transition: all $animation-duration-base;
+  
+  &:hover {
+    box-shadow: $box-shadow-hover;
+  }
+}
+
+/* 页面标题 */
+.page-title {
+  font-size: $font-size-huge;
+  font-weight: 500;
+  margin-bottom: $spacing-large;
+  color: $text-primary;
+  display: flex;
+  align-items: center;
+  
+  .icon {
+    margin-right: $spacing-small;
+    color: $primary;
+  }
+}
+
+/* 卡片样式 */
+.card {
+  border-radius: $border-radius-base;
+  background-color: $bg-primary;
+  box-shadow: $box-shadow-base;
+  padding: $spacing-large;
+  margin-bottom: $spacing-large;
+  transition: box-shadow $animation-duration-base;
+  
+  &:hover {
+    box-shadow: $box-shadow-hover;
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-medium;
+    
+    .card-title {
+      font-size: $font-size-large;
+      font-weight: 500;
+      color: $text-primary;
+    }
+  }
+}
+
+/* 数值展示 */
+.stat-number {
+  font-size: $font-size-huge;
+  font-weight: 700;
+  color: $primary;
+  margin-bottom: $spacing-mini;
+  
+  &.success {
+    color: $success;
+  }
+  
+  &.warning {
+    color: $warning;
+  }
+  
+  &.danger {
+    color: $danger;
+  }
+  
+  &.info {
+    color: $info;
+  }
+}
+
+.stat-title {
+  font-size: $font-size-base;
+  color: $text-secondary;
+}
+
+/* 统计卡片 */
+.stat-card {
+  padding: $spacing-large;
+  border-radius: $border-radius-base;
+  background-color: $bg-primary;
+  box-shadow: $box-shadow-base;
+  transition: transform $animation-duration-base;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: $box-shadow-hover;
+  }
+  
+  .stat-icon {
+    font-size: 24px;
+    margin-bottom: $spacing-small;
+  }
+}
+
+/* 按钮动效 */
+.btn-hover-effect {
+  transition: transform $animation-duration-fast;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 图表容器 */
+.chart-container {
+  width: 100%;
+  height: 320px;
+  margin-bottom: $spacing-large;
+}
+
+/* 母婴主题样式 */
+.baby-theme {
+  .chart-title {
+    font-size: $font-size-large;
+    font-weight: 500;
+    margin-bottom: $spacing-medium;
+    color: $primary-dark;
+    display: flex;
+    align-items: center;
+    
+    .icon {
+      margin-right: $spacing-small;
+    }
+  }
+  
+  .chart-info {
+    font-size: $font-size-small;
+    color: $text-secondary;
+    margin-bottom: $spacing-medium;
+  }
+  
+  .chart-container {
+    background-color: $bg-primary;
+    border-radius: $border-radius-base;
+    padding: $spacing-medium;
+    box-shadow: $box-shadow-base;
+  }
+}
+
+/* 定制El-card样式 */
+.el-card {
+  border-radius: $border-radius-base !important;
+  border: none !important;
+  margin-bottom: $spacing-large;
+  box-shadow: $box-shadow-base !important;
+  transition: box-shadow $animation-duration-base, transform $animation-duration-base;
+  
+  &:hover {
+    box-shadow: $box-shadow-hover !important;
+  }
+  
+  .el-card__header {
+    padding: $spacing-medium $spacing-large !important;
+    border-bottom: 1px solid $border-light !important;
+  }
+  
+  .el-card__body {
+    padding: $spacing-large !important;
+  }
+}
+
+/* 定制El-table样式 */
+.el-table {
+  border-radius: $border-radius-base !important;
+  
+  .el-table__header-wrapper th {
+    background-color: $bg-container !important;
+    font-weight: 500;
+  }
+  
+  .el-table__row:hover {
+    background-color: $bg-hover !important;
+  }
+}
+
+/* 响应式布局辅助 */
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.ml-10 {
+  margin-left: 10px;
+}
+
+.mr-10 {
+  margin-right: 10px;
+}
+
+/* 图标动画效果 */
+.icon-spin {
+  animation: icon-spin 2s infinite linear;
+}
+
+@keyframes icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 

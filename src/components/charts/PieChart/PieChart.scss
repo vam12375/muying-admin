@@ -1,0 +1,109 @@
+@import '@/assets/styles/variables.scss';
+
+.pie-chart-container {
+  position: relative;
+  width: 100%;
+  background-color: $bg-primary;
+  border-radius: $border-radius-base;
+  overflow: hidden;
+  transition: all $animation-duration-base;
+  box-shadow: $box-shadow-base;
+  
+  &:hover {
+    box-shadow: $box-shadow-hover;
+    transform: translateY(-2px);
+  }
+  
+  .pie-chart-title {
+    padding: $spacing-medium $spacing-large;
+    
+    .chart-title {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      
+      .el-icon {
+        margin-right: $spacing-small;
+        color: $primary;
+      }
+    }
+  }
+  
+  .chart-dom {
+    width: 100%;
+  }
+}
+
+// 添加母婴主题特有样式
+.baby-theme {
+  .chart-title {
+    color: $primary-dark;
+    font-weight: 500;
+    font-size: $font-size-large;
+  }
+  
+  .chart-info {
+    margin-top: $spacing-mini;
+    font-size: $font-size-small;
+    color: $text-secondary;
+  }
+}
+
+// 添加响应式支持
+@media (max-width: 768px) {
+  .pie-chart-container {
+    min-height: 300px;
+  }
+}
+
+// 添加图表特效
+.pie-chart-container {
+  // 旋转动效
+  .rotate-animation {
+    animation: pie-rotate 15s linear infinite;
+  }
+  
+  // 悬浮效果增强
+  .enhanced-hover {
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+}
+
+@keyframes pie-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 自定义图例样式
+.pie-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: $spacing-medium 0;
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: $spacing-medium;
+    margin-bottom: $spacing-small;
+    
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: $spacing-mini;
+    }
+    
+    .legend-text {
+      font-size: $font-size-small;
+      color: $text-regular;
+    }
+  }
+} 

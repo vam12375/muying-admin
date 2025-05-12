@@ -1,0 +1,261 @@
+@import '@/assets/styles/variables.scss';
+
+.dashboard-container {
+  .dashboard-header {
+    margin-bottom: $spacing-large;
+    
+    .page-title {
+      animation: fadeInDown 1s;
+    }
+    
+    .current-date {
+      font-size: $font-size-base;
+      color: $text-secondary;
+      animation: fadeInUp 1s;
+    }
+  }
+  
+  // 数据统计卡片
+  .stat-card {
+    padding: $spacing-large;
+    border-radius: $border-radius-base;
+    background-color: $bg-primary;
+    box-shadow: $box-shadow-base;
+    transition: all $animation-duration-base;
+    height: 100%;
+    margin-bottom: $spacing-large;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50px;
+      height: 50px;
+      border-radius: 0 0 0 100%;
+      opacity: 0.1;
+    }
+    
+    &.primary::before {
+      background-color: $primary;
+    }
+    
+    &.info::before {
+      background-color: $secondary;
+    }
+    
+    &.success::before {
+      background-color: $success;
+    }
+    
+    &.warning::before {
+      background-color: $warning;
+    }
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: $box-shadow-hover;
+      
+      .stat-icon {
+        transform: scale(1.2);
+      }
+    }
+    
+    .stat-icon {
+      font-size: 32px;
+      margin-bottom: $spacing-base;
+      transition: transform $animation-duration-base;
+      
+      .primary & {
+        color: $primary;
+      }
+      
+      .info & {
+        color: $secondary;
+      }
+      
+      .success & {
+        color: $success;
+      }
+      
+      .warning & {
+        color: $warning;
+      }
+    }
+    
+    .stat-number {
+      font-size: $font-size-huge;
+      font-weight: 700;
+      margin-bottom: $spacing-mini;
+      
+      &.primary {
+        color: $primary;
+      }
+      
+      &.info {
+        color: $secondary;
+      }
+      
+      &.success {
+        color: $success;
+      }
+      
+      &.warning {
+        color: $warning;
+      }
+    }
+    
+    .stat-title {
+      font-size: $font-size-base;
+      color: $text-secondary;
+    }
+  }
+  
+  // 卡片样式
+  .box-card {
+    margin-bottom: $spacing-large;
+    transition: all $animation-duration-base;
+    
+    &:hover {
+      box-shadow: $box-shadow-hover;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      span {
+        font-weight: 500;
+        color: $text-primary;
+        display: flex;
+        align-items: center;
+        
+        .el-icon {
+          margin-right: $spacing-small;
+          color: $primary;
+        }
+      }
+    }
+  }
+  
+  // 系统信息样式
+  .system-info {
+    padding: $spacing-medium 0;
+    
+    .system-info-item {
+      margin-bottom: $spacing-medium;
+      font-size: $font-size-base;
+      display: flex;
+      transition: all $animation-duration-base;
+      
+      &:hover {
+        transform: translateX(5px);
+      }
+      
+      .label {
+        width: 120px;
+        color: $text-secondary;
+      }
+      
+      .value {
+        flex: 1;
+        color: $text-primary;
+        font-weight: 500;
+      }
+    }
+  }
+  
+  // 表格样式
+  .el-table {
+    td {
+      padding: $spacing-small 0;
+    }
+    
+    .el-tag {
+      border-radius: 12px;
+    }
+  }
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .dashboard-container {
+    .stat-card {
+      margin-bottom: $spacing-medium;
+    }
+    
+    .chart-container {
+      margin-bottom: $spacing-large;
+    }
+  }
+}
+
+// 动画效果
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 数字动画
+.number-animation {
+  display: inline-block;
+  transition: all 0.5s;
+  
+  &.active {
+    transform: scale(1.2);
+    color: $primary;
+  }
+}
+
+// 婴儿主题特殊样式
+.baby-theme {
+  .stat-card {
+    border-radius: $border-radius-base + 5px;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+    }
+    
+    &.primary::after {
+      background: linear-gradient(to right, $primary-light, $primary-dark);
+    }
+    
+    &.info::after {
+      background: linear-gradient(to right, $secondary-light, $secondary-dark);
+    }
+    
+    &.success::after {
+      background: linear-gradient(to right, lighten($success, 20%), $success);
+    }
+    
+    &.warning::after {
+      background: linear-gradient(to right, lighten($warning, 20%), $warning);
+    }
+  }
+} 

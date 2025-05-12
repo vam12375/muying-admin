@@ -1,0 +1,336 @@
+// 定义变量
+$primary-color: #409eff;
+$success-color: #67c23a;
+$warning-color: #e6a23c;
+$danger-color: #f56c6c;
+$info-color: #909399;
+
+$border-color: #e4e7ed;
+$background-color: #f5f7fa;
+$card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+$hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+
+$spacing-small: 8px;
+$spacing-medium: 16px;
+$spacing-large: 24px;
+
+$border-radius: 4px;
+$transition-duration: 0.3s;
+
+// Redis监控页面样式
+.redis-monitor-container {
+  padding: $spacing-medium;
+  
+  // 统一卡片样式
+  .el-card {
+    margin-bottom: $spacing-large;
+    box-shadow: $card-shadow;
+    border-radius: $border-radius;
+    transition: all $transition-duration;
+    
+    &:hover {
+      box-shadow: $hover-shadow;
+    }
+    
+    .el-card__header {
+      border-bottom: 1px solid rgba($border-color, 0.8);
+      padding: $spacing-medium;
+    }
+    
+    .el-card__body {
+      padding: $spacing-large;
+    }
+  }
+  
+  // 卡片头部样式
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .header-title {
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 600;
+      
+      .el-icon {
+        margin-right: $spacing-small;
+        font-size: 18px;
+        color: $primary-color;
+      }
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: $spacing-small;
+    }
+  }
+  
+  // Redis信息区域样式
+  .redis-info-section {
+    .el-row {
+      margin-bottom: $spacing-large;
+    }
+    
+    .el-divider {
+      margin: $spacing-large 0;
+      
+      .el-icon {
+        margin-right: $spacing-small;
+        color: $primary-color;
+      }
+    }
+    
+    .redis-details {
+      .el-descriptions__label {
+        font-weight: 600;
+      }
+    }
+  }
+  
+  // 状态卡片样式
+  .stat-card {
+    background-color: white;
+    border-radius: $border-radius;
+    padding: $spacing-large;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    transition: all $transition-duration;
+    height: 120px;
+    margin-bottom: $spacing-medium;
+    position: relative;
+    overflow: hidden;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      border-top-left-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+    }
+    
+    &.primary::before {
+      background-color: $primary-color;
+    }
+    
+    &.success::before {
+      background-color: $success-color;
+    }
+    
+    &.warning::before {
+      background-color: $warning-color;
+    }
+    
+    &.info::before {
+      background-color: $info-color;
+    }
+    
+    .stat-icon {
+      font-size: 24px;
+      margin-bottom: $spacing-small;
+      opacity: 0.8;
+      
+      .el-icon {
+        &.primary {
+          color: $primary-color;
+        }
+        
+        &.success {
+          color: $success-color;
+        }
+        
+        &.warning {
+          color: $warning-color;
+        }
+        
+        &.info {
+          color: $info-color;
+        }
+      }
+    }
+    
+    .stat-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      
+      .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: $spacing-small;
+      }
+      
+      .stat-label {
+        font-size: 14px;
+        color: $info-color;
+      }
+    }
+  }
+  
+  // 搜索区域样式
+  .search-section {
+    margin-bottom: $spacing-large;
+    
+    .pattern-input {
+      margin-bottom: $spacing-small;
+    }
+    
+    .pattern-hints {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $spacing-medium;
+      font-size: 12px;
+      color: $info-color;
+      padding: $spacing-small;
+      
+      .hint {
+        display: flex;
+        align-items: center;
+        
+        .keyword {
+          font-family: monospace;
+          background-color: $background-color;
+          padding: 2px 4px;
+          border-radius: 2px;
+          margin-right: 4px;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+  
+  // 表格区域样式
+  .keys-table-container {
+    .el-table {
+      margin-bottom: $spacing-medium;
+      
+      .key-name {
+        font-family: monospace;
+        word-break: break-all;
+      }
+      
+      .table-actions {
+        display: flex;
+        gap: $spacing-small;
+        justify-content: center;
+        
+        .action-button {
+          padding: 4px 12px;
+        }
+      }
+    }
+    
+    // 分页容器
+    .pagination-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: $spacing-large;
+    }
+  }
+  
+  // 键详情对话框样式
+  .key-detail-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-large;
+    margin-bottom: $spacing-medium;
+    
+    .detail-item {
+      display: flex;
+      align-items: center;
+      
+      .detail-label {
+        font-weight: 600;
+        margin-right: $spacing-small;
+      }
+    }
+  }
+  
+  // 键值类型显示样式
+  .string-value, .list-value, .hash-value, .set-value, .zset-value {
+    margin-top: $spacing-medium;
+    
+    .value-display {
+      border: 1px solid $border-color;
+      border-radius: $border-radius;
+      
+      pre {
+        margin: 0;
+        padding: $spacing-medium;
+        background-color: $background-color;
+        border-radius: $border-radius;
+        font-family: monospace;
+        white-space: pre-wrap;
+        overflow-x: auto;
+        line-height: 1.5;
+      }
+      
+      .json-display {
+        .formatted-json, .json-tree {
+          background-color: $background-color;
+          border-radius: $border-radius;
+          padding: $spacing-medium;
+          font-family: monospace;
+          line-height: 1.5;
+          max-height: 400px;
+          overflow: auto;
+        }
+        
+        .json-tree {
+          color: #333;
+          
+          .string { color: #009688; }
+          .number { color: #2196F3; }
+          .boolean { color: #FF5722; }
+          .null { color: #9C27B0; }
+          .key { color: #795548; font-weight: bold; }
+        }
+      }
+    }
+  }
+  
+  // 加载占位符
+  .loading-placeholder {
+    padding: $spacing-medium;
+  }
+  
+  // 响应式调整
+  @media (max-width: 768px) {
+    .el-card__body {
+      padding: $spacing-medium;
+    }
+    
+    .stat-card {
+      height: auto;
+      padding: $spacing-medium;
+      
+      .stat-value {
+        font-size: 24px;
+      }
+    }
+    
+    .search-section {
+      .pattern-hints {
+        flex-direction: column;
+        gap: $spacing-small;
+      }
+    }
+    
+    .key-detail-header {
+      flex-direction: column;
+      gap: $spacing-small;
+    }
+  }
+} 

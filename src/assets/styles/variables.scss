@@ -1,0 +1,82 @@
+// 母婴主题色系
+// 主色调
+$primary: #FF8FAB; // 温柔粉色作为主色调
+$primary-light: #FFB7C9;
+$primary-dark: #E76F8C;
+
+// 辅助色
+$secondary: #A5D8FF; // 淡蓝色
+$secondary-light: #D1EAFF;
+$secondary-dark: #7ABEEB;
+
+// 中性色
+$tertiary: #B5C7E3; // 淡紫色
+$tertiary-light: #D6E2F3;
+$tertiary-dark: #94A6C2;
+
+// 功能色
+$success: #67C23A;
+$warning: #FFB547;
+$danger: #F56C6C;
+$info: #909399;
+
+// 文本颜色
+$text-primary: #303133;
+$text-regular: #606266;
+$text-secondary: #909399;
+$text-placeholder: #C0C4CC;
+
+// 边框颜色
+$border-base: #E4E7ED;
+$border-light: #F2F6FC;
+$border-dark: #D4D7DE;
+
+// 背景颜色
+$bg-primary: #FFFFFF;
+$bg-navbar: #FFFFFF;
+$bg-sidebar: #F0F3FA;
+$bg-container: #F5F7FB;
+$bg-hover: #EDEEF5;
+
+// 尺寸变量
+$navbar-height: 64px;
+$sidebar-width: 220px;
+$sidebar-collapsed-width: 64px;
+$border-radius-base: 10px;
+$border-radius-small: 6px;
+$border-radius-circle: 50%;
+
+// 字体变量
+$font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$font-size-base: 14px;
+$font-size-small: 12px;
+$font-size-large: 16px;
+$font-size-extra-large: 18px;
+$font-size-huge: 22px;
+
+// 阴影
+$box-shadow-base: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+$box-shadow-hover: 0 6px 18px 0 rgba(0, 0, 0, 0.1);
+
+// 动画时间
+$animation-duration-slow: 0.5s;
+$animation-duration-base: 0.3s;
+$animation-duration-fast: 0.15s;
+
+// 间距
+$spacing-mini: 4px;
+$spacing-small: 8px;
+$spacing-base: 12px;
+$spacing-medium: 16px;
+$spacing-large: 24px;
+$spacing-extra-large: 32px;
+
+// z-index层级
+$z-index-normal: 1;
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070; 
