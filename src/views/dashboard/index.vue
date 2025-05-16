@@ -14,7 +14,8 @@
         <div class="stat-card" 
           data-aos="fade-up" 
           :data-aos-delay="index * 100"
-          :class="item.type">
+          :class="item.type"
+          v-loading="loading.stats">
           <el-icon class="stat-icon">
             <component :is="item.icon"></component>
           </el-icon>
@@ -34,7 +35,8 @@
           :area-style="{ startColor: '#FF8FAB', endColor: 'rgba(255, 143, 171, 0.1)' }"
           height="350px"
           :animation-duration="2000"
-          :show-shadow="true">
+          :show-shadow="true"
+          v-loading="loading.orderTrend">
         </line-chart>
       </el-col>
       <el-col :xs="24" :md="12" data-aos="fade-left">
@@ -44,7 +46,8 @@
           :chart-data="productCategoryData"
           height="350px"
           :animation-duration="2000"
-          :rose-type="true">
+          :rose-type="true"
+          v-loading="loading.categories">
         </pie-chart>
       </el-col>
     </el-row>
@@ -58,7 +61,8 @@
           :chart-data="monthlySalesData"
           height="350px"
           bar-style="gradient"
-          :animation-duration="2000">
+          :animation-duration="2000"
+          v-loading="loading.monthlySales">
         </bar-chart>
       </el-col>
       <el-col :xs="24" :md="12" data-aos="fade-up" data-aos-delay="100">
@@ -69,7 +73,8 @@
           height="350px"
           :horizontal="true"
           bar-style="gradient"
-          :animation-duration="2000">
+          :animation-duration="2000"
+          v-loading="loading.userGrowth">
         </bar-chart>
       </el-col>
     </el-row>
@@ -77,7 +82,7 @@
     <!-- 通知和事项 -->
     <el-row :gutter="20" class="mt-20">
       <el-col :span="12" data-aos="fade-up">
-        <el-card class="box-card">
+        <el-card class="box-card" v-loading="loading.todoItems">
           <template #header>
             <div class="card-header">
               <span>
@@ -104,7 +109,7 @@
       </el-col>
       
       <el-col :span="12" data-aos="fade-up" data-aos-delay="100">
-        <el-card class="box-card">
+        <el-card class="box-card" v-loading="loading.systemInfo">
           <template #header>
             <div class="card-header">
               <span>

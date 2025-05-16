@@ -1,0 +1,457 @@
+// login.scss for muying-admin login page redesign
+// This file will contain all custom styles and animations for the new login page.
+
+// 全局变量定义
+:root {
+  --primary-gradient: linear-gradient(135deg, #5065DA, #556FFF, #699EFF);
+  --accent-gradient: linear-gradient(45deg, #FF6B93, #FF9671);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(255, 255, 255, 0.07);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --shadow-primary: 0 15px 35px rgba(0, 0, 0, 0.2);
+  --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.3);
+  --transition-smooth: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+// 全页面动态渐变背景
+.login-container-reimagined {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  
+  // 高级渐变背景
+  background: linear-gradient(-45deg, #36096d, #37d5d6, #5271C4, #B19FFF);
+  background-size: 400% 400%;
+  animation: gradient-animation 15s ease infinite;
+  
+  // 动态粒子背景
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-width='1'%3E%3Cpath d='M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63'/%3E%3Cpath d='M-31 229L237 261 390 382 603 493 308.5 537.5 101.5 381.5M370 905L295 764'/%3E%3Cpath d='M520 660L578 842 731 737 840 599 603 493 520 660 295 764 309 538 390 382 539 269 769 229 577.5 41.5 370 105 295 -36 126.5 79.5 237 261 102 382 40 599 -69 737 127 880'/%3E%3Cpath d='M520-140L578.5 42.5 731-63M603 493L539 269 237 261 370 105M902 382L539 269M390 382L102 382'/%3E%3Cpath d='M-222 42L126.5 79.5 370 105 539 269 577.5 41.5 927 80 769 229 902 382 603 493 731 737M295-36L577.5 41.5M578 842L295 764M40-201L127 80M102 382L-261 269'/%3E%3C/g%3E%3Cg fill='%23FFFFFF'%3E%3Ccircle cx='769' cy='229' r='5'/%3E%3Ccircle cx='539' cy='269' r='5'/%3E%3Ccircle cx='603' cy='493' r='5'/%3E%3Ccircle cx='731' cy='737' r='5'/%3E%3Ccircle cx='520' cy='660' r='5'/%3E%3Ccircle cx='309' cy='538' r='5'/%3E%3Ccircle cx='295' cy='764' r='5'/%3E%3Ccircle cx='40' cy='599' r='5'/%3E%3Ccircle cx='102' cy='382' r='5'/%3E%3Ccircle cx='127' cy='80' r='5'/%3E%3Ccircle cx='370' cy='105' r='5'/%3E%3Ccircle cx='578' cy='42' r='5'/%3E%3Ccircle cx='237' cy='261' r='5'/%3E%3Ccircle cx='390' cy='382' r='5'/%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.07;
+    z-index: 0;
+    animation: subtle-float 120s linear infinite;
+    pointer-events: none;
+  }
+  
+  // 装饰性圆形元素
+  &::after {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    top: -150px;
+    right: -150px;
+    z-index: 0;
+    animation: pulse 15s ease-in-out infinite alternate;
+  }
+}
+
+// 登录卡片 - 现代Neumorphism与玻璃特效混合
+.login-card {
+  position: relative;
+  max-width: 480px;
+  width: 90%;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  z-index: 2;
+  transition: var(--transition-smooth);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 20px rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  
+  // 左上角装饰性圆形
+  &::before {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(255, 107, 147, 0.2), rgba(255, 150, 113, 0.2));
+    top: -75px;
+    left: -75px;
+    z-index: -1;
+  }
+  
+  // 右下角装饰性圆形
+  &::after {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(80, 101, 218, 0.2), rgba(105, 158, 255, 0.2));
+    bottom: -60px;
+    right: -60px;
+    z-index: -1;
+  }
+  
+  // 悬停效果增强
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+      inset 0 0 30px rgba(255, 255, 255, 0.05);
+  }
+}
+
+// 标题样式现代化
+.title-container {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    width: 50px;
+    height: 3px;
+    background: var(--accent-gradient);
+    border-radius: 3px;
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+  }
+  
+  &:hover::after {
+    width: 80px;
+  }
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  position: relative;
+  display: inline-block;
+  
+  // 标题装饰元素
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #FF6B93, #FF9671);
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+  }
+  
+  &::before {
+    left: -20px;
+  }
+  
+  &::after {
+    right: -20px;
+  }
+  
+  &:hover::before {
+    left: -24px;
+    opacity: 1;
+  }
+  
+  &:hover::after {
+    right: -24px;
+    opacity: 1;
+  }
+}
+
+// 自定义 Element Plus 输入框样式 - 更现代化
+.login-form {
+  .el-form-item {
+    margin-bottom: 30px;
+    position: relative;
+    
+    .el-form-item__error {
+      color: rgba(255, 107, 147, 0.9);
+      font-weight: 500;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      padding-left: 5px;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+  }
+  
+  // 现代化输入框样式
+  .el-input {
+    --el-input-hover-border-color: rgba(255, 255, 255, 0.8);
+    --el-input-focus-border-color: rgba(255, 255, 255, 0.9);
+    
+    .el-input__wrapper {
+      background-color: rgba(255, 255, 255, 0.05);
+      box-shadow: none;
+      border-radius: 12px;
+      padding: 4px 15px;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      
+      // 输入框底部发光边框
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 2px;
+        width: 100%;
+        background: linear-gradient(90deg, #5065DA, #556FFF, #699EFF);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      
+      // 聚焦状态
+      &.is-focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        
+        &::after {
+          transform: scaleX(1);
+        }
+      }
+      
+      // 悬停状态
+      &:hover:not(.is-focus) {
+        border-color: rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.07);
+      }
+    }
+    
+    // 输入文本样式
+    .el-input__inner {
+      color: rgba(255, 255, 255, 0.95);
+      height: 46px;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 300;
+        transition: opacity 0.3s ease;
+      }
+      
+      &:focus::placeholder {
+        opacity: 0.5;
+      }
+    }
+    
+    // 图标样式
+    .el-input__prefix,
+    .el-input__suffix {
+      color: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    &:hover, .el-input__wrapper.is-focus {
+      .el-input__prefix,
+      .el-input__suffix {
+        color: rgba(255, 255, 255, 0.9);
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  // 现代化按钮样式
+  .el-button--primary {
+    margin-top: 20px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    
+    // 渐变背景
+    &:not(.is-loading) {
+      background-image: linear-gradient(135deg, #5065DA, #556FFF, #699EFF);
+      background-size: 200% 100%;
+      background-position: 0 0;
+      box-shadow: 
+        0 6px 16px rgba(80, 101, 218, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    // 悬停状态
+    &:hover:not(.is-loading):not(.is-disabled) {
+      transform: translateY(-3px);
+      background-position: 100% 0;
+      box-shadow: 
+        0 10px 25px rgba(80, 101, 218, 0.4),
+        0 3px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    // 点击状态
+    &:active:not(.is-loading):not(.is-disabled) {
+      transform: translateY(1px);
+      box-shadow: 
+        0 4px 10px rgba(80, 101, 218, 0.25),
+        0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    // 涟漪效果
+    &::before {
+      content: '';
+      position: absolute;
+      display: block;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.3);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: width 0s ease, height 0s ease, opacity 0.5s ease;
+      z-index: 1;
+    }
+    
+    &:not(.is-loading):not(.is-disabled):active::before {
+      width: 400px;
+      height: 400px;
+      opacity: 1;
+      transition: width 0.5s ease, height 0.5s ease, opacity 0s ease;
+    }
+    
+    // 禁用状态
+    &.is-disabled {
+      background: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.5);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    
+    // 现代化加载状态
+    &.is-loading {
+      background: rgba(80, 101, 218, 0.7);
+      cursor: wait;
+      
+      .el-loading-spinner {
+        .circular {
+          width: 22px;
+          height: 22px;
+          animation: pulseAndRotate 2s cubic-bezier(0.55, 0, 0.45, 1) infinite;
+        }
+        
+        .path {
+          stroke: rgba(255, 255, 255, 0.95);
+          stroke-width: 3;
+          stroke-linecap: round;
+          animation: dashedStroke 1.5s ease-in-out infinite;
+        }
+      }
+      
+      // 加载状态下的脉冲背景
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+        animation: buttonPulse 2s infinite;
+      }
+    }
+  }
+}
+
+// 动画定义
+@keyframes gradient-animation {
+  0% { background-position: 0% 50% }
+  50% { background-position: 100% 50% }
+  100% { background-position: 0% 50% }
+}
+
+@keyframes subtle-float {
+  from { background-position: 0 0 }
+  to { background-position: 100% 100% }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.2 }
+  50% { transform: scale(1.2); opacity: 0.3 }
+  100% { transform: scale(1); opacity: 0.2 }
+}
+
+@keyframes pulseAndRotate {
+  0% { transform: rotate(0deg) scale(0.9) }
+  50% { transform: rotate(180deg) scale(1.1) }
+  100% { transform: rotate(360deg) scale(0.9) }
+}
+
+@keyframes dashedStroke {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes buttonPulse {
+  0% { box-shadow: 0 0 0 0 rgba(80, 101, 218, 0.5) }
+  70% { box-shadow: 0 0 0 10px rgba(80, 101, 218, 0) }
+  100% { box-shadow: 0 0 0 0 rgba(80, 101, 218, 0) }
+}
+
+// 兼容性处理
+@supports not (backdrop-filter: blur(20px)) {
+  .login-card {
+    background: rgba(40, 44, 52, 0.8);
+  }
+}
+
+// 针对需要减少动画的用户
+@media (prefers-reduced-motion: reduce) {
+  .login-container-reimagined,
+  .login-container-reimagined::before,
+  .login-container-reimagined::after,
+  .login-card,
+  .login-card:hover,
+  .title-container::after,
+  .login-form .el-input .el-input__wrapper,
+  .login-form .el-input .el-input__wrapper::after,
+  .login-form .el-button--primary,
+  .login-form .el-button--primary:hover {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+} 

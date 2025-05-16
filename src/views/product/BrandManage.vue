@@ -44,7 +44,7 @@
           <template #default="{ row }">
             <el-image
               v-if="row.logo"
-              :src="row.logo"
+              :src="formatImageUrl(row.logo)"
               fit="cover"
               style="width: 60px; height: 60px; border-radius: 4px;"
               :preview-src-list="[row.logo]"
@@ -198,7 +198,7 @@
           <div class="brand-detail-logo">
             <el-image
               v-if="drawer.brand.logo"
-              :src="drawer.brand.logo"
+              :src="formatImageUrl(drawer.brand.logo)"
               fit="cover"
               class="detail-logo"
               :preview-src-list="[drawer.brand.logo]"
@@ -273,6 +273,7 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getBrandList, addBrand, updateBrand, deleteBrand } from '@/api/product';
 import { getToken } from '@/utils/auth';
+import { formatImageUrl } from '@/utils/imageUtils';
 
 export default defineComponent({
   name: 'BrandManage',
@@ -348,9 +349,9 @@ export default defineComponent({
     const getList = async () => {
       loading.value = true;
       try {
-        const res = await getBrandList(queryParams);
-        brandList.value = res.data.list || [];
-        total.value = res.data.total || 0;
+        const { data } = await getBrandList(queryParams);
+        brandList.value = data.list;
+        total.value = data.total;
       } catch (error) {
         console.error('获取品牌列表失败:', error);
       } finally {
@@ -380,16 +381,16 @@ export default defineComponent({
     const handleAdd = () => {
       dialog.title = '添加品牌';
       dialog.type = 'add';
+      
       // 重置表单
-      Object.assign(brandForm, {
-        id: null,
-        name: '',
-        firstLetter: '',
-        logo: '',
-        description: '',
-        sort: 0,
-        showStatus: 1
-      });
+      brandForm.id = null;
+      brandForm.name = '';
+      brandForm.firstLetter = '';
+      brandForm.logo = '';
+      brandForm.description = '';
+      brandForm.sort = 0;
+      brandForm.showStatus = 1;
+      
       dialog.visible = true;
     };
 
@@ -397,11 +398,17 @@ export default defineComponent({
     const handleEdit = (row) => {
       dialog.title = '编辑品牌';
       dialog.type = 'edit';
+      
       // 填充表单
-      Object.assign(brandForm, row);
+      brandForm.id = row.id;
+      brandForm.name = row.name;
+      brandForm.firstLetter = row.firstLetter;
+      brandForm.logo = row.logo;
+      brandForm.description = row.description;
+      brandForm.sort = row.sort;
+      brandForm.showStatus = row.showStatus;
+      
       dialog.visible = true;
-      // 如果抽屉打开，则关闭
-      drawer.visible = false;
     };
 
     // 查看品牌详情
@@ -525,6 +532,7 @@ export default defineComponent({
       brandForm,
       brandRules,
       uploadHeaders,
+      formatImageUrl,
       handleSearch,
       handleSizeChange,
       handleCurrentChange,

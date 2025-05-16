@@ -191,6 +191,7 @@ export default {
               show: false
             },
             emphasis: {
+              scale: props.hoverAnimation ? true : false,
               label: {
                 show: true,
                 fontSize: 14,
@@ -212,7 +213,6 @@ export default {
               }
             },
             data: props.chartData,
-            hoverAnimation: props.hoverAnimation
           }
         ],
         // 添加中心文本

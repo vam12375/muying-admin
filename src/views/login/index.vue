@@ -1,56 +1,89 @@
 <template>
-  <div class="login-container">
-    <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
-      <div class="title-container">
-        <h3 class="title">母婴商城管理系统</h3>
-      </div>
-
-      <el-form-item prop="admin_name">
-        <el-input
-          v-model="loginForm.admin_name"
-          placeholder="用户名"
-          type="text"
-          autocomplete="off"
+  <div class="login-container-reimagined">
+    <div 
+      class="login-card"
+      v-motion
+      :initial="{ opacity: 0, y: 100 }"
+      :enter="{ opacity: 1, y: 0, transition: { delay: 100, duration: 700 } }"
+    >
+      <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
+        <div 
+          class="title-container"
+          v-motion
+          :initial="{ opacity: 0, scale: 0.8 }"
+          :enter="{ opacity: 1, scale: 1, transition: { delay: 400, duration: 600 } }"
         >
-          <template #prefix>
-            <el-icon><UserFilled /></el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
+          <h3 class="title">母婴商城管理系统</h3>
+        </div>
 
-      <el-form-item prop="admin_pass">
-        <el-input
-          v-model="loginForm.admin_pass"
-          placeholder="密码"
-          :type="passwordVisible ? 'text' : 'password'"
-          autocomplete="off"
+        <el-form-item 
+          prop="admin_name"
+          v-motion
+          :initial="{ opacity: 0, x: -40 }"
+          :enter="{ opacity: 1, x: 0, transition: { delay: 600, duration: 500 } }"
         >
-          <template #prefix>
-            <el-icon><Lock /></el-icon>
-          </template>
-          <template #suffix>
-            <el-icon @click="passwordVisible = !passwordVisible">
-              <View v-if="passwordVisible" />
-              <Hide v-else />
-            </el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
+          <el-input
+            v-model="loginForm.admin_name"
+            placeholder="用户名"
+            type="text"
+            autocomplete="off"
+          >
+            <template #prefix>
+              <el-icon><UserFilled /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width: 100%" @click="handleLogin">
-        登录
-      </el-button>
-    </el-form>
+        <el-form-item 
+          prop="admin_pass"
+          v-motion
+          :initial="{ opacity: 0, x: -40 }"
+          :enter="{ opacity: 1, x: 0, transition: { delay: 700, duration: 500 } }"
+        >
+          <el-input
+            v-model="loginForm.admin_pass"
+            placeholder="密码"
+            :type="passwordVisible ? 'text' : 'password'"
+            autocomplete="off"
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+            <template #suffix>
+              <el-icon @click="passwordVisible = !passwordVisible">
+                <View v-if="passwordVisible" />
+                <Hide v-else />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <el-button 
+          :loading="loading" 
+          type="primary" 
+          style="width: 100%" 
+          @click="handleLogin"
+          v-motion
+          :initial="{ opacity: 0, y: 40 }"
+          :enter="{ opacity: 1, y: 0, transition: { delay: 800, duration: 600 } }"
+        >
+          登录
+        </el-button>
+      </el-form>
+    </div>
   </div>
 </template>
 
 <script setup>
+import './login.scss'
 import { ref, reactive } from 'vue'
 import { UserFilled, Lock, View, Hide } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { setToken, setUserInfo } from '@/utils/auth'
 import request from '@/utils/request'
+// 引入 motion 动画
+import { } from '@vueuse/motion'
 
 const router = useRouter()
 const loading = ref(false)
@@ -104,36 +137,4 @@ const handleLogin = async () => {
     }
   })
 }
-</script>
-
-<style scoped>
-.login-container {
-  min-height: 100vh;
-  width: 100%;
-  background-color: #f5f7f9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-form {
-  max-width: 400px;
-  padding: 35px 35px 15px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.title-container {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.title {
-  font-size: 26px;
-  color: #409EFF;
-  margin: 0;
-  font-weight: bold;
-}
-</style> 
+</script> 

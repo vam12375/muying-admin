@@ -41,6 +41,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
+    console.log(`[API响应] ${response.config.url}:`, res)
     
     // 如果响应的content-type是application/octet-stream，表示是文件下载，直接返回
     if (response.headers['content-type'] && response.headers['content-type'].includes('application/octet-stream')) {
@@ -49,14 +50,20 @@ service.interceptors.response.use(
     
     // 处理返回结果
     if (res.code === 200 || res.code === 0 || res.success === true) {
+      // 为了兼容业务代码中检查 res.success 的逻辑，添加 success 字段
+      if (res.code === 200 && res.success === undefined) {
+        res.success = true
+      }
       return res
     } else {
       // 处理错误
+      console.error(`[API错误] ${response.config.url}:`, res)
       showError(res.message || '操作失败')
       return Promise.reject(new Error(res.message || '操作失败'))
     }
   },
   error => {
+    console.error('[API请求失败]', error.config?.url, error)
     const { status, data } = error.response || {}
     
     // 处理401错误（未授权）

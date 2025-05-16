@@ -56,6 +56,27 @@
 
         <el-sub-menu index="4">
           <template #title>
+            <el-icon><Ticket /></el-icon>
+            <span>优惠券管理</span>
+          </template>
+          <el-menu-item index="/coupon/list">优惠券列表</el-menu-item>
+          <el-menu-item index="/coupon/batch">批次管理</el-menu-item>
+          <el-menu-item index="/coupon/rule">规则管理</el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="5">
+          <template #title>
+            <el-icon><Star /></el-icon>
+            <span>积分管理</span>
+          </template>
+          <el-menu-item index="/points/history">积分历史</el-menu-item>
+          <el-menu-item index="/points/user">用户积分</el-menu-item>
+          <el-menu-item index="/points/rule">积分规则</el-menu-item>
+          <el-menu-item index="/points/product">积分商品</el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="6">
+          <template #title>
             <el-icon><Setting /></el-icon>
             <span>系统设置</span>
           </template>
@@ -79,6 +100,19 @@
         </div>
         
         <div class="right-menu">
+          <div class="right-menu-item">
+            <router-link to="/message/index">
+              <el-badge :value="unreadMessageCount" :max="99" class="message-badge" v-if="unreadMessageCount > 0">
+                <el-tooltip content="消息中心" placement="bottom">
+                  <el-icon class="nav-icon btn-hover-effect message-icon"><Message /></el-icon>
+                </el-tooltip>
+              </el-badge>
+              <el-tooltip content="消息中心" placement="bottom" v-else>
+                <el-icon class="nav-icon btn-hover-effect message-icon"><Message /></el-icon>
+              </el-tooltip>
+            </router-link>
+          </div>
+          
           <div class="right-menu-item">
             <el-tooltip content="刷新页面" placement="bottom">
               <el-icon class="nav-icon btn-hover-effect" @click="refreshPage"><Refresh /></el-icon>
@@ -151,10 +185,14 @@ import {
   EditPen,
   SwitchButton,
   Present,
-  DataAnalysis
+  DataAnalysis,
+  Ticket,
+  Star,
+  Message
 } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { getUser, logout } from '@/utils/auth'
+import { getUnreadCount } from '@/api/message'
 
 const router = useRouter()
 const route = useRoute()
@@ -169,6 +207,10 @@ const userAvatar = ref('')
 const isFullscreen = ref(false)
 // 是否为移动设备
 const isMobile = ref(window.innerWidth < 768)
+// 未读消息数量
+const unreadMessageCount = ref(0)
+// 消息刷新定时器
+let messageTimer = null
 
 // 计算当前激活的菜单项
 const activeMenu = computed(() => {
@@ -232,6 +274,18 @@ const resizeHandler = () => {
   }
 }
 
+// 获取未读消息数量
+const fetchUnreadMessageCount = async () => {
+  try {
+    const res = await getUnreadCount()
+    if (res.code === 200) {
+      unreadMessageCount.value = res.data || 0
+    }
+  } catch (error) {
+    console.error('获取未读消息数量失败:', error)
+  }
+}
+
 // 组件挂载完成后
 onMounted(() => {
   // 监听窗口大小变化
@@ -244,6 +298,12 @@ onMounted(() => {
   document.addEventListener('fullscreenchange', () => {
     isFullscreen.value = !!document.fullscreenElement
   })
+  
+  // 初始获取未读消息数量
+  fetchUnreadMessageCount()
+  
+  // 设置定时获取未读消息数量（每60秒刷新一次）
+  messageTimer = setInterval(fetchUnreadMessageCount, 60000)
 })
 
 // 组件卸载前
@@ -253,6 +313,11 @@ onUnmounted(() => {
   
   // 移除全屏变化监听
   document.removeEventListener('fullscreenchange', () => {})
+  
+  // 清除消息刷新定时器
+  if (messageTimer) {
+    clearInterval(messageTimer)
+  }
 })
 
 // 添加菜单点击事件处理器，确保正确导航到用户列表页面
@@ -469,6 +534,80 @@ const handleSelect = (index) => {
   
   &:active {
     transform: translateY(0);
+  }
+}
+
+.message-badge {
+  margin-right: 16px;
+}
+
+.message-icon {
+  font-size: 20px;
+  color: $text-regular;
+  cursor: pointer;
+  transition: color 0.3s;
+  
+  &:hover {
+    color: $primary;
+  }
+}
+
+/* 确保徽章样式正确 */
+:deep(.el-badge__content) {
+  background-color: $danger;
+  border: none;
+}
+
+.right-menu {
+  display: flex;
+  align-items: center;
+  
+  .right-menu-item {
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .nav-icon {
+    font-size: 18px;
+    color: $text-regular;
+    cursor: pointer;
+    transition: color 0.3s;
+    
+    &:hover {
+      color: $primary;
+    }
+  }
+  
+  .btn-hover-effect {
+    cursor: pointer;
+    transition: 0.3s;
+    border-radius: 50%;
+    padding: 8px;
+    
+    &:hover {
+      background-color: $bg-hover;
+    }
+  }
+  
+  .avatar-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: $border-radius-small;
+    cursor: pointer;
+    
+    .user-avatar {
+      margin-right: 8px;
+      background-color: $primary-light;
+      color: $primary-dark;
+    }
+    
+    .user-name {
+      margin-right: 5px;
+      font-size: $font-size-base;
+      color: $text-regular;
+    }
   }
 }
 </style> 

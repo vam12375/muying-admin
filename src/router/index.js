@@ -126,6 +126,94 @@ const constantRoutes = [
     ]
   },
   {
+    path: '/coupon',
+    component: Layout,
+    redirect: '/coupon/list',
+    name: 'Coupon',
+    meta: { title: '优惠券管理', icon: 'ticket', requiresAuth: true },
+    children: [
+      {
+        path: 'list',
+        component: () => import('@/views/coupon/list.vue'),
+        name: 'CouponList',
+        meta: { title: '优惠券列表', icon: 'tickets', requiresAuth: true }
+      },
+      {
+        path: 'create',
+        component: () => import('@/views/coupon/form.vue'),
+        name: 'CouponCreate',
+        meta: { title: '创建优惠券', requiresAuth: true },
+        hidden: true
+      },
+      {
+        path: 'edit/:id',
+        component: () => import('@/views/coupon/form.vue'),
+        name: 'CouponEdit',
+        meta: { title: '编辑优惠券', requiresAuth: true },
+        hidden: true
+      },
+      {
+        path: 'batch',
+        component: () => import('@/views/coupon/batch.vue'),
+        name: 'CouponBatch',
+        meta: { title: '批次管理', icon: 'files', requiresAuth: true }
+      },
+      {
+        path: 'rule',
+        component: () => import('@/views/coupon/rule.vue'),
+        name: 'CouponRule',
+        meta: { title: '规则管理', icon: 'setting', requiresAuth: true }
+      }
+    ]
+  },
+  {
+    path: '/points',
+    component: Layout,
+    redirect: '/points/history',
+    name: 'Points',
+    meta: { title: '积分管理', icon: 'star', requiresAuth: true },
+    children: [
+      {
+        path: 'history',
+        component: () => import('@/views/points/list.vue'),
+        name: 'PointsHistory',
+        meta: { title: '积分历史', icon: 'history', requiresAuth: true }
+      },
+      {
+        path: 'user',
+        component: () => import('@/views/points/user.vue'),
+        name: 'UserPoints',
+        meta: { title: '用户积分', icon: 'user', requiresAuth: true }
+      },
+      {
+        path: 'rule',
+        component: () => import('@/views/points/rule.vue'),
+        name: 'PointsRule',
+        meta: { title: '积分规则', icon: 'setting', requiresAuth: true }
+      },
+      {
+        path: 'product',
+        component: () => import('@/views/points/product.vue'),
+        name: 'PointsProduct',
+        meta: { title: '积分商品', icon: 'gift', requiresAuth: true }
+      },
+      {
+        path: 'product/create',
+        component: () => import('@/views/points/product-form.vue'),
+        name: 'PointsProductCreate',
+        meta: { title: '创建积分商品', requiresAuth: true },
+        hidden: true
+      },
+      {
+        path: 'product/edit/:id',
+        component: () => import('@/views/points/product-form.vue'),
+        name: 'PointsProductEdit',
+        meta: { title: '编辑积分商品', requiresAuth: true },
+        hidden: true
+      }
+    ]
+  },
+  {
     path: '/system',
     component: Layout,
     redirect: '/system/redis',
@@ -140,6 +228,26 @@ const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/message',
+    component: Layout,
+    redirect: '/message/index',
+    alwaysShow: true,
+    name: 'Message',
+    meta: {
+      title: '消息管理',
+      icon: 'message',
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: 'index',
+        name: 'MessageList',
+        component: () => import('@/views/message/index.vue'),
+        meta: { title: '消息中心', icon: 'list', requiresAuth: true }
+      }
+    ]
+  },
   // 404页面必须放在最后
   {
     path: '/:pathMatch(.*)*',
@@ -147,6 +255,30 @@ const constantRoutes = [
     hidden: true
   }
 ]
+
+// 将asyncRoutes注释掉或移除，因为已将消息管理路由添加到constantRoutes
+// export const asyncRoutes = [
+//   {
+//     path: '/message',
+//     component: Layout,
+//     redirect: '/message/index',
+//     alwaysShow: true,
+//     name: 'Message',
+//     meta: {
+//       title: '消息管理',
+//       icon: 'message',
+//       roles: ['admin']
+//     },
+//     children: [
+//       {
+//         path: 'index',
+//         name: 'MessageList',
+//         component: () => import('@/views/message/index'),
+//         meta: { title: '消息中心', icon: 'list' }
+//       }
+//     ]
+//   },
+// ]
 
 const router = createRouter({
   history: createWebHistory(),

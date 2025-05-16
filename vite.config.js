@@ -26,6 +26,10 @@ export default defineConfig({
       '/products': {
         target: 'http://localhost:5173', // 前台系统的默认端口，根据实际情况调整
         changeOrigin: true
+      },
+      '/brands': {
+        target: 'http://localhost:5173', // 前台系统的默认端口，根据实际情况调整
+        changeOrigin: true
       }
     }
   }
