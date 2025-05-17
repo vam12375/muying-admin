@@ -77,6 +77,15 @@
 
         <el-sub-menu index="6">
           <template #title>
+            <el-icon><ChatDotRound /></el-icon>
+            <span>评价管理</span>
+          </template>
+          <el-menu-item index="/comment/list">评价列表</el-menu-item>
+          <el-menu-item index="/comment/stats">评价统计</el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="7">
+          <template #title>
             <el-icon><Setting /></el-icon>
             <span>系统设置</span>
           </template>
@@ -188,7 +197,8 @@ import {
   DataAnalysis,
   Ticket,
   Star,
-  Message
+  Message,
+  ChatDotRound
 } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { getUser, logout } from '@/utils/auth'

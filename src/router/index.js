@@ -248,6 +248,27 @@ const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/comment',
+    component: Layout,
+    redirect: '/comment/list',
+    name: 'Comment',
+    meta: { title: '评价管理', icon: 'chat-dot-round', requiresAuth: true },
+    children: [
+      {
+        path: 'list',
+        name: 'CommentList',
+        component: () => import('@/views/comment/index.vue'),
+        meta: { title: '评价列表', icon: 'list', requiresAuth: true }
+      },
+      {
+        path: 'stats',
+        name: 'CommentStats',
+        component: () => import('@/views/comment/stats.vue'),
+        meta: { title: '评价统计', icon: 'data-analysis', requiresAuth: true }
+      }
+    ]
+  },
   // 404页面必须放在最后
   {
     path: '/:pathMatch(.*)*',

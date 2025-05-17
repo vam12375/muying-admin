@@ -10,6 +10,13 @@
         <el-button @click="goBack" icon="ArrowLeft">返回订单列表</el-button>
         <div class="action-buttons">
           <el-button 
+            v-if="orderInfo.status === 'completed' && orderInfo.isCommented === 1"
+            type="primary" 
+            @click="viewComment"
+          >
+            查看评价
+          </el-button>
+          <el-button 
             v-if="orderInfo.status === 'pending_shipment'"
             type="success" 
             @click="handleShip"
@@ -650,6 +657,14 @@ const copyTrackingNo = (trackingNo) => {
     .catch(() => {
       ElMessage.error('复制失败，请手动复制')
     })
+}
+
+// 查看订单评价
+const viewComment = () => {
+  router.push({
+    path: '/comment/index',
+    query: { orderId: orderInfo.value.orderId }
+  })
 }
 
 // 组件挂载时获取数据
