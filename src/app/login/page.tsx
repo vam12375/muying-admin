@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Baby, Lock, User, AlertCircle } from 'lucide-react';
+import { authApi } from '@/lib/api';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -18,29 +19,16 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 调用后端登录 API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          admin_name: username, 
-          admin_pass: password 
-        }),
-      });
-
-      const data = await response.json();
+      // 调用后端登录 API（使用统一的 API 模块）
+      const response = await authApi.login(username, password);
       
       // 调试：打印后端返回的数据
-      console.log('后端返回数据:', data);
+      console.log('后端返回数据:', response);
 
-      // 检查多种可能的成功响应格式
-      const isSuccess = data.success === true || data.code === 200;
-      const token = data.data?.token || data.token;
-      const user = data.data?.user || data.user;
+      const token = response.data?.token;
+      const user = response.data?.user;
 
-      if (isSuccess && token) {
+      if (response.success && token) {
         // 保存 token
         localStorage.setItem('adminToken', token);
         localStorage.setItem('adminUser', JSON.stringify(user || { username }));

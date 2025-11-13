@@ -8,14 +8,18 @@ import { Header } from './Header';
 import { 
   OverviewView,
   ProductsView,
+  BrandsView,
+  CategoriesView,
   OrdersView,
   ReviewsView,
   AfterSalesView,
   CouponsView,
   PointsView,
   MessagesView,
-  LogisticsView
+  LogisticsView,
+  UsersView
 } from '@/views';
+import RedisView from '@/views/settings/RedisView';
 import type { ViewType } from '@/types/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -77,6 +81,7 @@ export function AdminDashboard() {
       'system-monitor': 'system-monitor',
       'system-config': 'system-config',
       'system-logs': 'system-logs',
+      'redis-manage': 'redis-manage',
     };
     
     if (viewMap[itemId]) {
@@ -153,15 +158,25 @@ export function AdminDashboard() {
                 <ProductsView />
               </motion.div>
             )}
-            {(selectedView === 'product-list' || selectedView === 'product-category' || selectedView === 'brand-management' || selectedView === 'product-analytics') && (
-              <motion.div key="product-sub" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+            {selectedView === 'product-list' && (
+              <motion.div key="product-list" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <ProductsView />
+              </motion.div>
+            )}
+            {selectedView === 'product-category' && (
+              <motion.div key="product-category" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <CategoriesView />
+              </motion.div>
+            )}
+            {selectedView === 'brand-management' && (
+              <motion.div key="brand-management" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <BrandsView />
+              </motion.div>
+            )}
+            {selectedView === 'product-analytics' && (
+              <motion.div key="product-analytics" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                    {selectedView === 'product-list' && '商品列表'}
-                    {selectedView === 'product-category' && '商品分类'}
-                    {selectedView === 'brand-management' && '品牌管理'}
-                    {selectedView === 'product-analytics' && '商品分析'}
-                  </h2>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">商品分析</h2>
                   <p className="text-slate-500 dark:text-slate-400 mt-2">功能开发中...</p>
                 </div>
               </motion.div>
@@ -183,10 +198,7 @@ export function AdminDashboard() {
             )}
             {selectedView === 'customers' && (
               <motion.div key="customers" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">用户管理</h2>
-                  <p className="text-slate-500 dark:text-slate-400 mt-2">功能开发中...</p>
-                </div>
+                <UsersView />
               </motion.div>
             )}
             {selectedView === 'coupons' && (
@@ -207,6 +219,11 @@ export function AdminDashboard() {
             {selectedView === 'logistics' && (
               <motion.div key="logistics" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <LogisticsView />
+              </motion.div>
+            )}
+            {selectedView === 'redis-manage' && (
+              <motion.div key="redis-manage" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <RedisView />
               </motion.div>
             )}
             {(selectedView === 'settings' || selectedView === 'system-monitor' || selectedView === 'system-config' || selectedView === 'system-logs') && (

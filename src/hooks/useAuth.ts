@@ -19,6 +19,12 @@ export function useAuth() {
   }, []);
 
   const checkAuth = () => {
+    // 服务端渲染时跳过认证检查
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('adminToken');
       const userStr = localStorage.getItem('adminUser');
@@ -54,6 +60,8 @@ export function useAuth() {
   };
 
   const logout = () => {
+    if (typeof window === 'undefined') return;
+    
     console.log('用户退出登录');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');

@@ -1,9 +1,9 @@
-import { AdminDashboard } from "@/components/layout";
+/**
+ * 根路由 - 重定向到 dashboard
+ */
+
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <div className="w-full h-screen">
-      <AdminDashboard />
-    </div>
-  );
+  redirect('/dashboard');
 }
