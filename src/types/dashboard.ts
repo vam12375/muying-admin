@@ -53,7 +53,8 @@ export type ViewType =
   | 'settings'
   | 'system-monitor'
   | 'system-config'
-  | 'system-logs';
+  | 'system-logs'
+  | 'redis-manage';
 
 // 评价数据类型
 export interface Review {

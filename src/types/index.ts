@@ -305,3 +305,12 @@ export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
  * Optional fields
  */
 export type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+// ==================== 模块类型导出 | Module Type Exports ====================
+
+export * from './common';
+export * from './product';
+export * from './category';
+export * from './brand';
+export * from './dashboard';
+export * from './coupon';
