@@ -20,6 +20,7 @@ import {
   Activity,
   Sliders,
   FileText as FileLog,
+  Database,
 } from 'lucide-react';
 import { NavigationItem, StatCard, Product, Order } from './types';
 
@@ -101,6 +102,7 @@ export const navigationItems: NavigationItem[] = [
       { id: "system-monitor", name: "系统监控", icon: Activity, href: "/settings/monitor" },
       { id: "system-config", name: "系统配置", icon: Sliders, href: "/settings/config" },
       { id: "system-logs", name: "系统日志", icon: FileLog, href: "/settings/logs" },
+      { id: "redis-manage", name: "Redis管理", icon: Database, href: "/settings/redis" },
     ]
   },
 ];
