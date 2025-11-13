@@ -1,317 +1,487 @@
-"use client";
+'use client';
+
+/**
+ * 商品列表视图
+ * Products List View
+ * 
+ * Source: 基于 muying-admin-react ProductList.tsx 改造
+ */
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Plus, Edit, Trash2, Eye, Package } from 'lucide-react';
-import { productsApi } from '@/lib/api';
-import { formatPrice, formatDate } from '@/lib/utils';
+import { 
+  Search, Plus, Edit2, Trash2, Eye, MoreVertical,
+  Package, TrendingUp, AlertCircle, CheckCircle
+} from 'lucide-react';
+import { getProductList, deleteProduct, updateProductStatus, getProductDetail, createProduct, updateProduct } from '@/lib/api/products';
+import { getAllBrands } from '@/lib/api/brands';
+import { getCategoryList } from '@/lib/api/categories';
+import { ProductDetailModal } from '@/components/products/ProductDetailModal';
+import { ProductEditModal } from '@/components/products/ProductEditModal';
+import type { Product, ProductFormData } from '@/types/product';
+import type { Brand } from '@/types/brand';
+import type { Category } from '@/types/category';
 
-/**
- * 商品管理视图
- * 展示商品列表、搜索、编辑等功能
- * 
- * Source: 参考 muying-admin-react/src/views/product/ProductList.tsx
- */
 export function ProductsView() {
-  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  
+  // 搜索和筛选
+  const [keyword, setKeyword] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
+  const [selectedStatus, setSelectedStatus] = useState<number | undefined>();
+  
+  // 分页
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
 
-  // 加载商品列表
+  // 弹窗状态
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // 加载数据
   useEffect(() => {
     loadProducts();
-  }, [currentPage, searchKeyword]);
+    loadBrands();
+    loadCategories();
+  }, [currentPage, keyword, selectedCategory, selectedStatus]);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      setError(null);
-
-      const response = await productsApi.getList(currentPage, pageSize, searchKeyword);
-      
-      console.log('[Products] API Response:', response);
+      const response = await getProductList({
+        page: currentPage,
+        size: pageSize,
+        keyword,
+        categoryId: selectedCategory,
+        status: selectedStatus
+      });
       
       if (response.success && response.data) {
-        const data = response.data;
-        // 后端可能返回 records 或 list
-        const productList = data.records || data.list || [];
-        console.log('[Products] Product list:', productList);
-        setProducts(productList);
-        setTotal(data.total || 0);
+        setProducts(response.data.records || []);
+        setTotal(response.data.total || 0);
       }
-    } catch (err: any) {
-      console.error('加载商品列表失败:', err);
-      setError(err.message || '加载失败');
-      // 即使失败也设置空数组
-      setProducts([]);
+    } catch (error) {
+      console.error('加载商品列表失败:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 处理搜索
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const loadBrands = async () => {
+    try {
+      const response = await getAllBrands();
+      if (response.success && response.data) {
+        setBrands(response.data);
+      }
+    } catch (error) {
+      console.error('加载品牌列表失败:', error);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await getCategoryList();
+      if (response.success && response.data) {
+        setCategories(response.data);
+      }
+    } catch (error) {
+      console.error('加载分类列表失败:', error);
+    }
+  };
+
+  // 搜索处理
+  const handleSearch = () => {
     setCurrentPage(1);
     loadProducts();
   };
 
-  // 格式化商品状态
-  const formatStatus = (status: number) => {
-    return status === 1 ? '上架' : '下架';
+  // 重置筛选
+  const handleReset = () => {
+    setKeyword('');
+    setSelectedCategory(undefined);
+    setSelectedStatus(undefined);
+    setCurrentPage(1);
+  };
+
+  // 删除商品
+  const handleDelete = async (id: number) => {
+    if (!confirm('确定要删除该商品吗？')) return;
+    
+    try {
+      const response = await deleteProduct(id);
+      if (response.success) {
+        alert('删除成功');
+        loadProducts();
+      }
+    } catch (error) {
+      console.error('删除商品失败:', error);
+      alert('删除失败');
+    }
+  };
+
+  // 切换商品状态
+  const handleToggleStatus = async (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === '上架' ? 0 : 1;
+    
+    try {
+      const response = await updateProductStatus(id, newStatus);
+      if (response.success) {
+        alert(`${newStatus === 1 ? '上架' : '下架'}成功`);
+        loadProducts();
+      }
+    } catch (error) {
+      console.error('更新商品状态失败:', error);
+      alert('操作失败');
+    }
+  };
+
+  // 查看商品详情
+  const handleViewDetail = async (id: number) => {
+    try {
+      const response = await getProductDetail(id);
+      if (response.success && response.data) {
+        setSelectedProduct(response.data);
+        setDetailModalOpen(true);
+      }
+    } catch (error) {
+      console.error('获取商品详情失败:', error);
+      alert('获取商品详情失败');
+    }
+  };
+
+  // 编辑商品
+  const handleEdit = async (id: number) => {
+    try {
+      const response = await getProductDetail(id);
+      if (response.success && response.data) {
+        setSelectedProduct(response.data);
+        setEditModalOpen(true);
+      }
+    } catch (error) {
+      console.error('获取商品详情失败:', error);
+      alert('获取商品详情失败');
+    }
+  };
+
+  // 添加商品
+  const handleAdd = () => {
+    setSelectedProduct(null);
+    setEditModalOpen(true);
+  };
+
+  // 保存商品
+  const handleSave = async (data: ProductFormData) => {
+    try {
+      let response;
+      if (selectedProduct) {
+        response = await updateProduct(selectedProduct.productId, data);
+      } else {
+        response = await createProduct(data);
+      }
+      
+      if (response.success) {
+        alert(selectedProduct ? '更新成功' : '创建成功');
+        loadProducts();
+      }
+    } catch (error) {
+      console.error('保存商品失败:', error);
+      throw error;
+    }
+  };
+
+  // 格式化价格
+  const formatPrice = (price: number) => {
+    return `¥${price.toFixed(2)}`;
   };
 
   // 获取状态样式
-  const getStatusStyle = (status: number) => {
-    return status === 1
-      ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-      : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+  const getStatusStyle = (status: string) => {
+    return status === '上架'
+      ? 'bg-green-100 text-green-700'
+      : 'bg-gray-100 text-gray-700';
   };
 
-  // 加载状态
-  if (loading && products.length === 0 && !error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">加载中...</p>
-        </div>
-      </div>
-    );
-  }
+  // 获取库存样式
+  const getStockStyle = (stock: number) => {
+    if (stock > 10) return 'bg-green-100 text-green-700';
+    if (stock > 0) return 'bg-yellow-100 text-yellow-700';
+    return 'bg-red-100 text-red-700';
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* 错误提示 */}
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
-              <p className="text-red-600 dark:text-red-400">{error}</p>
-            </div>
+    <div className="p-6 space-y-6">
+      {/* 页面标题 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">商品管理</h1>
+          <p className="text-sm text-gray-500 mt-1">管理商品信息、库存和状态</p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleAdd}
+          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg flex items-center gap-2 hover:shadow-lg transition-shadow"
+        >
+          <Plus className="w-4 h-4" />
+          添加商品
+        </motion.button>
+      </div>
+
+      {/* 搜索和筛选 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* 搜索框 */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索商品名称/品牌"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* 分类筛选 */}
+          <select
+            value={selectedCategory || ''}
+            onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : undefined)}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">全部分类</option>
+            {categories.map((cat) => (
+              <option key={cat.categoryId} value={cat.categoryId}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+
+          {/* 状态筛选 */}
+          <select
+            value={selectedStatus !== undefined ? selectedStatus : ''}
+            onChange={(e) => setSelectedStatus(e.target.value ? Number(e.target.value) : undefined)}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">全部状态</option>
+            <option value="1">在售</option>
+            <option value="0">下架</option>
+          </select>
+
+          {/* 操作按钮 */}
+          <div className="flex gap-2">
             <button
-              onClick={() => {
-                setError(null);
-                loadProducts();
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+              onClick={handleSearch}
+              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
-              重试
+              搜索
+            </button>
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              重置
             </button>
           </div>
         </div>
-      )}
-
-      {/* 页面标题和操作栏 */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center">
-            <Package className="mr-2 text-pink-500" />
-            商品管理
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            共 {total} 个商品
-          </p>
-        </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition-all">
-          <Plus className="h-4 w-4" />
-          <span>添加商品</span>
-        </button>
-      </div>
-
-      {/* 搜索栏 */}
-      <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700 mb-6">
-        <form onSubmit={handleSearch} className="flex items-center space-x-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="搜索商品名称..."
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-          >
-            搜索
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSearchKeyword('');
-              setCurrentPage(1);
-            }}
-            className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
-          >
-            重置
-          </button>
-        </form>
-      </div>
+      </motion.div>
 
       {/* 商品列表 */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-700/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  商品信息
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  价格
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  库存
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  销量
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  状态
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  创建时间
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {products.length > 0 ? (
-                products.map((product) => (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+      >
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+            <Package className="w-16 h-16 mb-4" />
+            <p>暂无商品数据</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    商品信息
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    价格
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    库存
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    状态
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    创建时间
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    操作
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {products.map((product, index) => (
                   <motion.tr
                     key={product.productId}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="hover:bg-gray-50 transition-colors"
                   >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.productId}
+                    </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center gap-3">
                         <img
-                          src={product.productImg || '/placeholder-product.png'}
+                          src={product.productImg || '/placeholder.png'}
                           alt={product.productName}
                           className="w-12 h-12 rounded-lg object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/placeholder-product.png';
-                          }}
                         />
-                        <div>
-                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
                             {product.productName}
                           </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            ID: {product.productId}
+                          <p className="text-xs text-gray-500">
+                            {product.categoryName} | {product.brandName}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {formatPrice(product.price)}
-                      </span>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm">
+                        <p className="text-red-500 font-medium">{formatPrice(product.priceNew)}</p>
+                        {product.priceOld > product.priceNew && (
+                          <p className="text-xs text-gray-400 line-through">
+                            {formatPrice(product.priceOld)}
+                          </p>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-sm ${
-                        product.stock > 10
-                          ? 'text-green-600 dark:text-green-400'
-                          : product.stock > 0
-                          ? 'text-yellow-600 dark:text-yellow-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStockStyle(product.stock)}`}>
                         {product.stock}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {product.sales || 0}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusStyle(product.productStatus)}`}>
+                        {product.productStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusStyle(product.status)}`}>
-                        {formatStatus(product.status)}
-                      </span>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.createTime?.substring(0, 10)}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {formatDate(product.createTime, 'date')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end space-x-2">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
                         <button
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-blue-400 dark:hover:bg-blue-900/20"
+                          onClick={() => handleViewDetail(product.productId)}
+                          className="text-blue-600 hover:text-blue-800 p-1"
                           title="查看"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors dark:text-green-400 dark:hover:bg-green-900/20"
+                          onClick={() => handleEdit(product.productId)}
+                          className="text-green-600 hover:text-green-800 p-1"
                           title="编辑"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors dark:text-red-400 dark:hover:bg-red-900/20"
+                          onClick={() => handleToggleStatus(product.productId, product.productStatus)}
+                          className="text-yellow-600 hover:text-yellow-800 p-1"
+                          title={product.productStatus === '上架' ? '下架' : '上架'}
+                        >
+                          {product.productStatus === '上架' ? (
+                            <AlertCircle className="w-4 h-4" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.productId)}
+                          className="text-red-600 hover:text-red-800 p-1"
                           title="删除"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
                   </motion.tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <p className="text-slate-500 dark:text-slate-400">暂无商品数据</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* 分页 */}
-        {total > pageSize && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              显示 {(currentPage - 1) * pageSize + 1} 到 {Math.min(currentPage * pageSize, total)} 条，共 {total} 条
+        {!loading && products.length > 0 && (
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              共 {total} 条记录，第 {currentPage} / {Math.ceil(total / pageSize)} 页
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex gap-2">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-slate-600 dark:hover:bg-slate-700"
+                className="px-3 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 上一页
               </button>
-              <span className="px-4 py-2 text-sm text-slate-600 dark:text-slate-400">
-                第 {currentPage} / {Math.ceil(total / pageSize)} 页
-              </span>
               <button
                 onClick={() => setCurrentPage(Math.min(Math.ceil(total / pageSize), currentPage + 1))}
                 disabled={currentPage >= Math.ceil(total / pageSize)}
-                className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-slate-600 dark:hover:bg-slate-700"
+                className="px-3 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 下一页
               </button>
             </div>
           </div>
         )}
-      </div>
-    </motion.div>
+      </motion.div>
+
+      {/* 商品详情弹窗 */}
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={detailModalOpen}
+        onClose={() => {
+          setDetailModalOpen(false);
+          setSelectedProduct(null);
+        }}
+      />
+
+      {/* 商品编辑弹窗 */}
+      <ProductEditModal
+        product={selectedProduct}
+        brands={brands}
+        categories={categories}
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onSave={handleSave}
+      />
+    </div>
   );
 }

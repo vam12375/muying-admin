@@ -8,6 +8,8 @@ export { OverviewView } from './dashboard/OverviewView';
 
 // 商品管理
 export { ProductsView } from './products/ProductsView';
+export { BrandsView } from './products/BrandsView';
+export { CategoriesView } from './products/CategoriesView';
 
 // 订单管理
 export { OrdersView } from './orders/OrdersView';
@@ -29,3 +31,6 @@ export { LogisticsView } from './logistics/LogisticsView';
 
 // 售后管理
 export { AfterSalesView } from './after-sales/AfterSalesView';
+
+// 用户管理
+export { UsersView } from './users/UsersView';
