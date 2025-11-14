@@ -21,10 +21,10 @@ export { ReviewsView } from './reviews/ReviewsView';
 export { CouponsView } from './coupons/CouponsView';
 
 // 积分管理
-export { PointsView } from './points/PointsView';
+export { PointsViewEnhanced as PointsView } from './points/PointsViewEnhanced';
 
 // 消息管理
-export { MessagesView } from './messages/MessagesView';
+export { MessagesViewEnhanced as MessagesView } from './messages/MessagesViewEnhanced';
 
 // 物流管理
 export { LogisticsView } from './logistics/LogisticsView';

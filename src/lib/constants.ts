@@ -22,7 +22,7 @@ import {
   FileText as FileLog,
   Database,
 } from 'lucide-react';
-import { NavigationItem, StatCard, Product, Order } from './types';
+import { NavigationItem, StatCard, Product, Order } from '@/types/dashboard';
 
 export const navigationItems: NavigationItem[] = [
   { 
@@ -34,8 +34,7 @@ export const navigationItems: NavigationItem[] = [
   { 
     id: "products", 
     name: "商品管理", 
-    icon: Package, 
-    badge: "24",
+    icon: Package,
     children: [
       { id: "product-list", name: "商品列表", icon: LayoutGrid, href: "/products/list" },
       { id: "product-category", name: "商品分类", icon: FolderTree, href: "/products/category" },
@@ -47,28 +46,25 @@ export const navigationItems: NavigationItem[] = [
     id: "reviews", 
     name: "评价管理", 
     icon: MessageSquare, 
-    href: "/reviews",
-    badge: "12"
+    href: "/reviews"
   },
   { 
     id: "orders", 
     name: "订单管理", 
     icon: ShoppingCart, 
-    href: "/orders", 
-    badge: "8" 
+    href: "/orders"
   },
   { 
     id: "after-sales", 
     name: "售后管理", 
     icon: Headphones, 
-    href: "/after-sales",
-    badge: "3"
+    href: "/after-sales"
   },
   { 
-    id: "customers", 
+    id: "users", 
     name: "用户管理", 
     icon: Users, 
-    href: "/customers" 
+    href: "/users" 
   },
   { 
     id: "coupons", 

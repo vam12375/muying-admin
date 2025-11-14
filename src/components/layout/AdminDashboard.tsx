@@ -20,6 +20,8 @@ import {
   UsersView
 } from '@/views';
 import RedisView from '@/views/settings/RedisView';
+import { SystemMonitorViewEnhanced } from '@/views/monitor/SystemMonitorViewEnhanced';
+import { ProfileView } from '@/views/profile/ProfileView';
 import type { ViewType } from '@/types/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -32,6 +34,25 @@ export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedView, setSelectedView] = useState<ViewType>('overview');
+
+  // 初始化时从 localStorage 恢复上次访问的页面
+  useEffect(() => {
+    const savedActiveItem = localStorage.getItem('admin_active_item');
+    const savedView = localStorage.getItem('admin_selected_view');
+    
+    if (savedActiveItem && savedView) {
+      setActiveItem(savedActiveItem);
+      setSelectedView(savedView as ViewType);
+    }
+  }, []);
+
+  // 监听路由变化，保存到 localStorage
+  useEffect(() => {
+    if (activeItem && selectedView) {
+      localStorage.setItem('admin_active_item', activeItem);
+      localStorage.setItem('admin_selected_view', selectedView);
+    }
+  }, [activeItem, selectedView]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -52,6 +73,9 @@ export function AdminDashboard() {
   const handleItemClick = (itemId: string) => {
     // 处理退出登录
     if (itemId === 'logout') {
+      // 清除保存的路由信息
+      localStorage.removeItem('admin_active_item');
+      localStorage.removeItem('admin_selected_view');
       logout();
       return;
     }
@@ -73,10 +97,12 @@ export function AdminDashboard() {
       'orders': 'orders',
       'after-sales': 'after-sales',
       'customers': 'customers',
+      'users': 'customers', // 用户管理映射到customers视图
       'coupons': 'coupons',
       'points': 'points',
       'messages': 'messages',
       'logistics': 'logistics',
+      'profile': 'profile',
       'settings': 'settings',
       'system-monitor': 'system-monitor',
       'system-config': 'system-config',
@@ -134,6 +160,7 @@ export function AdminDashboard() {
         onItemClick={handleItemClick}
         onSearchChange={setSearchQuery}
         onLogout={logout}
+        onNavigateToProfile={() => handleItemClick('profile')}
       />
 
       {/* Main Content Area */}
@@ -143,6 +170,8 @@ export function AdminDashboard() {
           activeItem={activeItem}
           showNotifications={showNotifications}
           onToggleNotifications={() => setShowNotifications(!showNotifications)}
+          onNavigateToProfile={() => handleItemClick('profile')}
+          onLogout={logout}
         />
 
         {/* Main Content */}
@@ -221,17 +250,26 @@ export function AdminDashboard() {
                 <LogisticsView />
               </motion.div>
             )}
+            {selectedView === 'profile' && (
+              <motion.div key="profile" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <ProfileView />
+              </motion.div>
+            )}
             {selectedView === 'redis-manage' && (
               <motion.div key="redis-manage" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <RedisView />
               </motion.div>
             )}
-            {(selectedView === 'settings' || selectedView === 'system-monitor' || selectedView === 'system-config' || selectedView === 'system-logs') && (
+            {selectedView === 'system-monitor' && (
+              <motion.div key="system-monitor" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <SystemMonitorViewEnhanced />
+              </motion.div>
+            )}
+            {(selectedView === 'settings' || selectedView === 'system-config' || selectedView === 'system-logs') && (
               <motion.div key="settings" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <div className="text-center py-12">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                     {selectedView === 'settings' && '系统设置'}
-                    {selectedView === 'system-monitor' && '系统监控'}
                     {selectedView === 'system-config' && '系统配置'}
                     {selectedView === 'system-logs' && '系统日志'}
                   </h2>

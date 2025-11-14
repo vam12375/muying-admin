@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Baby, ChevronLeft, ChevronRight, Search, LogOut, ChevronDown } from 'lucide-react';
 import { navigationItems } from '@/lib/constants';
@@ -15,6 +15,7 @@ interface SidebarProps {
   onItemClick: (itemId: string) => void;
   onSearchChange: (query: string) => void;
   onLogout?: () => void;
+  onNavigateToProfile?: () => void;
 }
 
 export function SidebarNew({
@@ -26,9 +27,112 @@ export function SidebarNew({
   onItemClick,
   onSearchChange,
   onLogout,
+  onNavigateToProfile,
 }: SidebarProps) {
+  // 从localStorage加载展开状态
+  const loadExpandedItems = (): Set<string> => {
+    if (typeof window === 'undefined') return new Set(['products', 'settings']);
+    
+    try {
+      const saved = localStorage.getItem('sidebar-expanded-items');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return new Set(parsed);
+      }
+    } catch (error) {
+      console.error('Failed to load sidebar state:', error);
+    }
+    
+    // 默认展开商品管理和系统设置
+    return new Set(['products', 'settings']);
+  };
+
+  // 获取用户信息（从localStorage）
+  const getUserInfo = () => {
+    if (typeof window === 'undefined') return null;
+    const userStr = localStorage.getItem('adminUser');
+    console.log('[SidebarNew] localStorage.adminUser:', userStr);
+    if (!userStr) return null;
+    try {
+      const parsed = JSON.parse(userStr);
+      console.log('[SidebarNew] Parsed user info:', parsed);
+      console.log('[SidebarNew] Avatar URL:', parsed?.avatar);
+      return parsed;
+    } catch (error) {
+      console.error('[SidebarNew] Failed to parse user info:', error);
+      return null;
+    }
+  };
+
+  // 从后端获取最新的用户信息
+  const fetchLatestUserInfo = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) return;
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/info`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      console.log('[SidebarNew] Fetched latest user info:', result);
+
+      if (result.success && result.data) {
+        const latestUserInfo = {
+          id: result.data.userId,
+          username: result.data.username,
+          nickname: result.data.nickname,
+          avatar: result.data.avatar,
+          role: result.data.role
+        };
+        
+        console.log('[SidebarNew] Latest avatar URL:', latestUserInfo.avatar);
+        
+        // 更新 localStorage
+        localStorage.setItem('adminUser', JSON.stringify(latestUserInfo));
+        
+        // 更新状态
+        setUserInfo(latestUserInfo);
+      }
+    } catch (error) {
+      console.error('[SidebarNew] Failed to fetch latest user info:', error);
+    }
+  };
+
   // 展开的菜单项
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['products', 'settings']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(loadExpandedItems);
+  const [userInfo, setUserInfo] = useState(getUserInfo());
+
+  // 客户端水合后重新加载状态
+  useEffect(() => {
+    const loaded = loadExpandedItems();
+    setExpandedItems(loaded);
+    
+    // 首次加载时从后端获取最新用户信息
+    fetchLatestUserInfo();
+    
+    // 定期从后端获取最新用户信息（每30秒）
+    const interval = setInterval(() => {
+      fetchLatestUserInfo();
+    }, 30000);
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  // 保存展开状态到localStorage
+  const saveExpandedItems = (items: Set<string>) => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      localStorage.setItem('sidebar-expanded-items', JSON.stringify(Array.from(items)));
+    } catch (error) {
+      console.error('Failed to save sidebar state:', error);
+    }
+  };
 
   // 切换子菜单展开状态
   const toggleExpand = (itemId: string) => {
@@ -39,6 +143,7 @@ export function SidebarNew({
       newExpanded.add(itemId);
     }
     setExpandedItems(newExpanded);
+    saveExpandedItems(newExpanded);
   };
 
   // 渲染导航项
@@ -270,19 +375,43 @@ export function SidebarNew({
         >
           {!isCollapsed ? (
             <motion.div
+              onClick={onNavigateToProfile}
               className="flex items-center px-3 py-2.5 rounded-lg bg-white/50 backdrop-blur-sm hover:bg-white/80 transition-all duration-200 cursor-pointer dark:bg-slate-800/50 dark:hover:bg-slate-700/50 shadow-sm"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <motion.div
-                className="w-9 h-9 bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg"
+                className="w-9 h-9 rounded-full flex items-center justify-center shadow-lg overflow-hidden bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-500"
                 whileHover={{ scale: 1.1, rotate: 5 }}
               >
-                <span className="text-white font-bold text-sm">AD</span>
+                {userInfo?.avatar ? (
+                  <img 
+                    src={userInfo.avatar} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // 图片加载失败时显示首字母
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.style.display = 'none';
+                      const sibling = target.nextElementSibling as HTMLElement;
+                      if (sibling) sibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <span 
+                  className="text-white font-bold text-sm w-full h-full flex items-center justify-center"
+                  style={{ display: userInfo?.avatar ? 'none' : 'flex' }}
+                >
+                  {(userInfo?.nickname || userInfo?.username || 'AD').charAt(0).toUpperCase()}
+                </span>
               </motion.div>
               <div className="flex-1 min-w-0 ml-3">
-                <p className="text-sm font-semibold text-slate-800 truncate dark:text-slate-100">Admin User</p>
-                <p className="text-xs text-slate-500 truncate dark:text-slate-400">admin@mombaby.com</p>
+                <p className="text-sm font-semibold text-slate-800 truncate dark:text-slate-100">
+                  {userInfo?.nickname || userInfo?.username || 'Administrator'}
+                </p>
+                <p className="text-xs text-slate-500 truncate dark:text-slate-400">
+                  {userInfo?.role || 'admin'}
+                </p>
               </div>
               <motion.div
                 className="w-2.5 h-2.5 bg-green-500 rounded-full ml-2 shadow-lg shadow-green-500/50"
@@ -305,8 +434,26 @@ export function SidebarNew({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-sm">AD</span>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg overflow-hidden bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-500">
+                  {userInfo?.avatar ? (
+                    <img 
+                      src={userInfo.avatar} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                        const sibling = target.nextElementSibling as HTMLElement;
+                        if (sibling) sibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <span 
+                    className="text-white font-bold text-sm w-full h-full flex items-center justify-center"
+                    style={{ display: userInfo?.avatar ? 'none' : 'flex' }}
+                  >
+                    {(userInfo?.nickname || userInfo?.username || 'AD').charAt(0).toUpperCase()}
+                  </span>
                 </div>
                 <motion.div
                   className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-slate-800 shadow-lg shadow-green-500/50"
