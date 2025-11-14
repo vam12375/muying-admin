@@ -1,120 +1,76 @@
 /**
- * Users API - 用户管理
- * 对应后端: AdminUserAccountController
- * Source: 基于 muying-admin-react 的用户管理API
+ * 用户管理API
+ * User Management API
+ * 
+ * Source: 基于后端 AdminUserAccountController
  */
 
-import { fetchApi, ApiResponse } from './index';
+import { fetchApi } from './index'
+import type { 
+  UserAccount, 
+  AccountTransaction, 
+  UserListParams, 
+  TransactionListParams,
+  RechargeRequest
+} from '@/types/user'
+import type { PageResult } from '@/types/common'
 
 export const usersApi = {
   /**
-   * 获取用户列表（分页）
+   * 分页获取用户账户列表
    */
-  getList: async (
-    page: number = 1,
-    pageSize: number = 10,
-    keyword?: string,
-    status?: string,
-    role?: string
-  ) => {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      size: pageSize.toString(),
-      ...(keyword && { keyword }),
-      ...(status && { status }),
-    });
-    return fetchApi<any>(`/admin/user-accounts/page?${params}`);
+  getUserAccountPage: async (params: UserListParams) => {
+    return fetchApi<PageResult<UserAccount>>('/admin/users/page', { params })
   },
 
   /**
-   * 获取用户详情
+   * 获取用户账户详情
    */
-  getDetail: async (userId: number) => {
-    return fetchApi<any>(`/admin/user-accounts/${userId}`);
+  getUserAccount: async (userId: number) => {
+    return fetchApi<UserAccount>(`/admin/users/${userId}`)
   },
 
   /**
-   * 切换用户状态（启用/禁用）
+   * 管理员给用户充值
    */
-  toggleStatus: async (userId: number, status: number) => {
-    return fetchApi<any>(`/admin/user-accounts/${userId}/status?status=${status}`, {
-      method: 'PUT',
-    });
-  },
-
-  /**
-   * 删除用户
-   */
-  delete: async (userId: number) => {
-    return fetchApi<any>(`/admin/user-accounts/${userId}`, {
-      method: 'DELETE',
-    });
-  },
-
-  /**
-   * 管理员充值
-   */
-  recharge: async (data: {
-    userId: number;
-    amount: number;
-    paymentMethod?: string;
-    description?: string;
-    remark?: string;
-  }) => {
-    return fetchApi<any>('/admin/user-accounts/recharge', {
+  recharge: async (data: RechargeRequest) => {
+    return fetchApi<void>('/admin/users/recharge', {
       method: 'POST',
-      body: JSON.stringify(data),
-    });
+      body: JSON.stringify(data)
+    })
   },
 
   /**
-   * 调整用户余额
+   * 管理员调整用户余额
    */
   adjustBalance: async (userId: number, amount: number, reason: string) => {
-    return fetchApi<any>(
-      `/admin/user-accounts/${userId}/balance?amount=${amount}&reason=${encodeURIComponent(reason)}`,
-      {
-        method: 'PUT',
-      }
-    );
+    return fetchApi<void>(`/admin/users/${userId}/balance`, {
+      method: 'PUT',
+      params: { amount, reason }
+    })
   },
 
   /**
-   * 获取交易记录列表
+   * 更改用户账户状态（冻结/解冻）
    */
-  getTransactions: async (
-    page: number = 1,
-    pageSize: number = 10,
-    query?: {
-      userId?: number;
-      type?: number;
-      status?: number;
-      paymentMethod?: string;
-      transactionNo?: string;
-      startTime?: string;
-      endTime?: string;
-      keyword?: string;
-    }
-  ) => {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      size: pageSize.toString(),
-      ...(query?.userId && { userId: query.userId.toString() }),
-      ...(query?.type !== undefined && { type: query.type.toString() }),
-      ...(query?.status !== undefined && { status: query.status.toString() }),
-      ...(query?.paymentMethod && { paymentMethod: query.paymentMethod }),
-      ...(query?.transactionNo && { transactionNo: query.transactionNo }),
-      ...(query?.startTime && { startTime: query.startTime }),
-      ...(query?.endTime && { endTime: query.endTime }),
-      ...(query?.keyword && { keyword: query.keyword }),
-    });
-    return fetchApi<any>(`/admin/user-accounts/transactions/page?${params}`);
+  toggleStatus: async (userId: number, status: number, reason?: string) => {
+    return fetchApi<void>(`/admin/users/${userId}/status`, {
+      method: 'PUT',
+      params: { status, reason }
+    })
+  },
+
+  /**
+   * 分页获取交易记录列表
+   */
+  getTransactionPage: async (params: TransactionListParams) => {
+    return fetchApi<PageResult<AccountTransaction>>('/admin/users/transactions/page', { params })
   },
 
   /**
    * 获取交易记录详情
    */
-  getTransactionDetail: async (id: number) => {
-    return fetchApi<any>(`/admin/user-accounts/transactions/${id}`);
-  },
-};
+  getTransactionDetail: async (transactionId: number) => {
+    return fetchApi<AccountTransaction>(`/admin/users/transactions/${transactionId}`)
+  }
+}
