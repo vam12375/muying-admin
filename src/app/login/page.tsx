@@ -31,17 +31,28 @@ export default function LoginPage() {
       if (response.success && token) {
         // 保存 token
         localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminUser', JSON.stringify(user || { username }));
+        
+        // 确保保存完整的用户信息，包括 avatar
+        const userInfo = {
+          id: user?.id,
+          username: user?.username || username,
+          nickname: user?.nickname,
+          avatar: user?.avatar,
+          role: user?.role || 'admin'
+        };
+        
+        localStorage.setItem('adminUser', JSON.stringify(userInfo));
         
         console.log('登录成功，Token 已保存');
         console.log('Token:', token);
-        console.log('User:', user);
+        console.log('User Info:', userInfo);
+        console.log('Avatar URL:', user?.avatar);
         
         // 使用 window.location 进行页面跳转，确保完全刷新
         window.location.href = '/';
       } else {
-        console.log('登录失败:', data);
-        setError(data.message || '登录失败，请检查用户名和密码');
+        console.log('登录失败:', response);
+        setError(response.message || '登录失败，请检查用户名和密码');
       }
     } catch (err) {
       console.error('登录错误:', err);
