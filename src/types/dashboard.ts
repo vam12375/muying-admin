@@ -50,6 +50,7 @@ export type ViewType =
   | 'points'
   | 'messages'
   | 'logistics'
+  | 'profile'
   | 'settings'
   | 'system-monitor'
   | 'system-config'
