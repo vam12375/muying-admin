@@ -314,3 +314,5 @@ export * from './category';
 export * from './brand';
 export * from './dashboard';
 export * from './coupon';
+export * from './comment';
+export * from './logistics';

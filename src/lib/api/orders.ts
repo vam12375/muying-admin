@@ -1,6 +1,6 @@
 /**
  * Orders API - 订单管理
- * 对应后端: AdminOrderController (/admin/orders)
+ * 对应后端: AdminOrderController (/api/admin/orders)
  * Source: 基于后端 Spring Boot 接口实现
  */
 
@@ -30,7 +30,7 @@ export async function getOrderList(
   if (params.orderNo) queryParams.append('orderNo', params.orderNo);
   if (params.userId) queryParams.append('userId', params.userId.toString());
   
-  return fetchApi<OrderPageResponse>(`/admin/orders?${queryParams}`);
+  return fetchApi<OrderPageResponse>(`/api/admin/orders?${queryParams}`);
 }
 
 /**
@@ -39,7 +39,7 @@ export async function getOrderList(
  * GET /admin/orders/{id}
  */
 export async function getOrderDetail(id: number): Promise<ApiResponse<Order>> {
-  return fetchApi<Order>(`/admin/orders/${id}`);
+  return fetchApi<Order>(`/api/admin/orders/${id}`);
 }
 
 /**
@@ -48,7 +48,7 @@ export async function getOrderDetail(id: number): Promise<ApiResponse<Order>> {
  * GET /admin/orders/statistics
  */
 export async function getOrderStatistics(): Promise<ApiResponse<OrderStatistics>> {
-  return fetchApi<OrderStatistics>('/admin/orders/statistics');
+  return fetchApi<OrderStatistics>('/api/admin/orders/statistics');
 }
 
 /**
@@ -64,7 +64,7 @@ export async function updateOrderStatus(
   const params = new URLSearchParams({ status });
   if (remark) params.append('remark', remark);
   
-  return fetchApi<boolean>(`/admin/orders/${id}/status?${params}`, {
+  return fetchApi<boolean>(`/api/admin/orders/${id}/status?${params}`, {
     method: 'PUT'
   });
 }
@@ -87,7 +87,7 @@ export async function shipOrder(
   if (params.receiverPhone) queryParams.append('receiverPhone', params.receiverPhone);
   if (params.receiverAddress) queryParams.append('receiverAddress', params.receiverAddress);
   
-  return fetchApi<boolean>(`/admin/orders/${id}/ship?${queryParams}`, {
+  return fetchApi<boolean>(`/api/admin/orders/${id}/ship?${queryParams}`, {
     method: 'PUT'
   });
 }
@@ -104,7 +104,7 @@ export async function exportOrders(params?: OrderListParams): Promise<void> {
   if (params?.orderNo) queryParams.append('orderNo', params.orderNo);
   if (params?.userId) queryParams.append('userId', params.userId.toString());
   
-  const url = `${process.env.NEXT_PUBLIC_API_URL}/admin/orders/export?${queryParams}`;
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/orders/export?${queryParams}`;
   
   // 使用fetch下载文件
   const response = await fetch(url, {

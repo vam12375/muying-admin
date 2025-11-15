@@ -6,12 +6,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { SidebarNew } from './SidebarNew';
 import { Header } from './Header';
 import { 
-  OverviewView,
+  OverviewViewEnhanced,
   ProductsView,
   BrandsView,
   CategoriesView,
   OrdersView,
-  ReviewsView,
+  ReviewsViewEnhanced,
   AfterSalesView,
   CouponsView,
   PointsView,
@@ -179,7 +179,7 @@ export function AdminDashboard() {
           <AnimatePresence mode="wait">
             {selectedView === 'overview' && (
               <motion.div key="overview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                <OverviewView />
+                <OverviewViewEnhanced />
               </motion.div>
             )}
             {selectedView === 'products' && (
@@ -212,7 +212,7 @@ export function AdminDashboard() {
             )}
             {selectedView === 'reviews' && (
               <motion.div key="reviews" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                <ReviewsView />
+                <ReviewsViewEnhanced />
               </motion.div>
             )}
             {selectedView === 'orders' && (

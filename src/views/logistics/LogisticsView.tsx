@@ -1,118 +1,101 @@
-"use client";
+/**
+ * 物流管理视图
+ * Logistics Management View
+ * 
+ * 合并物流列表和物流公司管理两个子模块
+ * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ */
+
+'use client';
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Truck, Package, Phone, Globe, TrendingUp } from 'lucide-react';
-import { Logistics } from './types';
+import { Truck, Building } from 'lucide-react';
+import LogisticsListTab from '@/views/logistics/LogisticsListTab';
+import LogisticsCompanyTab from '@/views/logistics/LogisticsCompanyTab';
 
-const sampleLogistics: Logistics[] = [
-  { id: "LOG-001", name: "顺丰速运", code: "SF", phone: "95338", website: "www.sf-express.com", status: "active", orderCount: 456 },
-  { id: "LOG-002", name: "圆通速递", code: "YTO", phone: "95554", website: "www.yto.net.cn", status: "active", orderCount: 234 },
-  { id: "LOG-003", name: "中通快递", code: "ZTO", phone: "95311", website: "www.zto.com", status: "active", orderCount: 189 },
-  { id: "LOG-004", name: "韵达快递", code: "YD", phone: "95546", website: "www.yundaex.com", status: "inactive", orderCount: 0 },
-];
+type TabType = 'list' | 'company';
 
-export function LogisticsView() {
-  const [logistics] = useState<Logistics[]>(sampleLogistics);
+const LogisticsView: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabType>('list');
+
+  const tabs = [
+    { id: 'list' as TabType, label: '物流列表', icon: Truck },
+    { id: 'company' as TabType, label: '物流公司', icon: Building }
+  ];
 
   return (
-    <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">物流管理</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">管理物流公司和配送信息</p>
+    <div className="p-6 space-y-6">
+      {/* 页面标题 */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            物流管理
+          </h1>
+          <p className="text-gray-500 mt-1">管理订单物流信息和物流公司</p>
+        </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: "物流公司", value: logistics.length, icon: Truck, color: "from-blue-500 to-cyan-500" },
-          { label: "活跃中", value: logistics.filter(l => l.status === "active").length, icon: TrendingUp, color: "from-green-500 to-emerald-500" },
-          { label: "总订单", value: logistics.reduce((sum, l) => sum + l.orderCount, 0), icon: Package, color: "from-purple-500 to-pink-500" },
-          { label: "配送中", value: "156", icon: Truck, color: "from-orange-500 to-yellow-500" },
-        ].map((stat, index) => (
+      {/* Tab 切换 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <div className="flex border-b border-gray-200 dark:border-gray-700">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  flex items-center gap-2 px-6 py-4 font-medium transition-all relative
+                  ${isActive 
+                    ? 'text-blue-600 dark:text-blue-400' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }
+                `}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{tab.label}</span>
+                
+                {/* 活动指示器 */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600"
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab 内容 */}
+        <div className="p-6">
           <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02, y: -4 }}
-            className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50"
+            key={activeTab}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 shadow-lg`}>
-              <stat.icon className="h-6 w-6 text-white" />
-            </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
-            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">{stat.value}</p>
+            {activeTab === 'list' && <LogisticsListTab />}
+            {activeTab === 'company' && <LogisticsCompanyTab />}
           </motion.div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {logistics.map((company, index) => (
-          <motion.div
-            key={company.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.05 }}
-            whileHover={{ scale: 1.02, y: -4 }}
-            className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${
-                  company.status === "active" ? "from-blue-500 to-cyan-500" : "from-slate-400 to-slate-500"
-                } flex items-center justify-center shadow-lg`}>
-                  <Truck className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">{company.name}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">代码: {company.code}</p>
-                </div>
-              </div>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                company.status === "active"
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300"
-              }`}>
-                {company.status === "active" ? "活跃" : "未激活"}
-              </span>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                <Phone className="h-4 w-4 text-slate-400" />
-                <span>{company.phone}</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                <Globe className="h-4 w-4 text-slate-400" />
-                <span>{company.website}</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                <Package className="h-4 w-4 text-slate-400" />
-                <span>订单数: {company.orderCount}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <div className="flex gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex-1 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg text-sm font-medium"
-                >
-                  编辑
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium"
-                >
-                  {company.status === "active" ? "停用" : "启用"}
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
-}
+};
+
+export default LogisticsView;

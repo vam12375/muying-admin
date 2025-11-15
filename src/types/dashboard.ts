@@ -81,7 +81,7 @@ export interface AfterSale {
   date: string;
 }
 
-// 优惠券数据类型
+// 优惠券数据类型（仪表盘简化版）
 export interface Coupon {
   id: string;
   name: string;
@@ -120,7 +120,7 @@ export interface Message {
 }
 
 // 物流公司类型
-export interface Logistics {
+export interface LogisticsCompany {
   id: string;
   name: string;
   code: string;

@@ -5,6 +5,7 @@
 
 // 仪表盘
 export { OverviewView } from './dashboard/OverviewView';
+export { OverviewViewEnhanced } from './dashboard/OverviewViewEnhanced';
 
 // 商品管理
 export { ProductsView } from './products/ProductsView';
@@ -16,6 +17,7 @@ export { OrdersView } from './orders/OrdersView';
 
 // 评价管理
 export { ReviewsView } from './reviews/ReviewsView';
+export { ReviewsViewEnhanced } from './reviews/ReviewsViewEnhanced';
 
 // 优惠券管理
 export { CouponsView } from './coupons/CouponsView';
@@ -27,7 +29,8 @@ export { PointsViewEnhanced as PointsView } from './points/PointsViewEnhanced';
 export { MessagesViewEnhanced as MessagesView } from './messages/MessagesViewEnhanced';
 
 // 物流管理
-export { LogisticsView } from './logistics/LogisticsView';
+// 注意：LogisticsView 使用 default export，这里重新导出为 named export 以保持一致性
+export { default as LogisticsView } from './logistics/LogisticsView';
 
 // 售后管理
 export { AfterSalesView } from './after-sales/AfterSalesView';
