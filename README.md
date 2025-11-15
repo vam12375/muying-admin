@@ -4,22 +4,26 @@
 
 A modern, beautiful, and feature-rich admin dashboard for the MomBaby e-commerce platform.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![Status](https://img.shields.io/badge/status-production_ready-success)
+![Next.js](https://img.shields.io/badge/Next.js-16.0.2-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
-![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8)
+![Tailwind](https://img.shields.io/badge/Tailwind-4.1.17-38bdf8)
+![React](https://img.shields.io/badge/React-18.3.1-61dafb)
+![License](https://img.shields.io/badge/license-MIT-green)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 ---
 
 ## ✨ 核心特性 | Key Features
 
 - 🎯 **现代化界面** - 精美的渐变设计和流畅动画 | Modern UI/UX with smooth animations
-- �  **完全响应式** - 完美支持手机、平板和桌面设备 | Fully responsive design
-- � **深色模式 ** - 内置深色模式支持 | Built-in dark mode
+- 📱 **完全响应式** - 完美支持手机、平板和桌面设备 | Fully responsive design
+- 🌙 **深色模式** - 内置深色模式支持 | Built-in dark mode
 - ⚡ **高性能** - 使用 Next.js 16 和 Turbopack 优化 | Optimized with Next.js 16
-- � ***认证就绪** - 支持 JWT Token 认证 | JWT authentication ready
-- � **多视图 管理** - 仪表盘、商品、订单、用户等 | Multiple management views
-- 🎭 **丰富动画** - 使用 Framer Motion 实现流畅过渡 | Rich animations
+- 🔐 **认证就绪** - 支持 JWT Token 认证 | JWT authentication ready
+- 📊 **多视图管理** - 仪表盘、商品、订单、用户等 | Multiple management views
+- 🎭 **丰富动画** - 使用 Framer Motion 和 GSAP 实现流畅过渡 | Rich animations
 
 ---
 
@@ -48,36 +52,53 @@ npm run dev
 
 ---
 
-## � 文档o | Documentation
+## 📚 文档 | Documentation
 
 ### 🇨🇳 中文文档
 
 - [快速开始](./docs/zh-CN/quick-start.md) - 快速上手指南
 - [后端对接说明](./docs/zh-CN/integration-guide.md) - API 集成步骤
 - [完整使用指南](./docs/zh-CN/user-guide.md) - 详细使用手册
+- [模块指南](./docs/zh-CN/modules-guide.md) - 各模块功能说明
+- [故障排查](./docs/zh-CN/troubleshooting.md) - 常见问题解决
 - [更新日志](./docs/zh-CN/update-log.md) - 版本更新记录
 - [项目总结](./docs/zh-CN/project-summary.md) - 项目完成总结
 - [交付清单](./docs/zh-CN/delivery-checklist.md) - 项目交付清单
-- [登录问题修复](./docs/zh-CN/login-fix.md) - 登录相关问题解决
 
 ### 🇺🇸 English Documentation
 
 - [Quick Start](./docs/en-US/quick-start.md) - Getting started guide
 - [Integration Guide](./docs/en-US/integration-guide.md) - Backend integration
-- [Deployment Guide](./docs/en-US/deployment.md) - Production deployment
+- [Deployment Guide](./DEPLOYMENT.md) - Production deployment
 - [Components](./docs/en-US/components.md) - Component documentation
 - [Dashboard Features](./docs/en-US/dashboard-readme.md) - Feature details
 - [Project Summary](./docs/en-US/project-summary.md) - Complete overview
+
+### 📄 其他文档 | Additional Documentation
+
+- [项目总结](./docs/PROJECT_SUMMARY.md) - 完整项目总结 | Complete project summary
+- [项目路线图](./docs/ROADMAP.md) - 未来发展规划 | Future roadmap
+- [部署指南](./docs/DEPLOYMENT.md) - 详细部署说明 | Detailed deployment guide
+- [API 文档](./docs/API.md) - API 接口文档 | API documentation
+- [常见问题](./docs/FAQ.md) - 常见问题解答 | Frequently asked questions
+- [贡献指南](./docs/CONTRIBUTING.md) - 如何贡献代码 | How to contribute
+- [更新日志](./docs/CHANGELOG.md) - 版本更新记录 | Version changelog
+- [项目状态](./docs/STATUS.md) - 开发状态追踪 | Development status
+- [安全政策](./docs/SECURITY.md) - 安全相关说明 | Security policy
+- [文档索引](./docs/DOCUMENTATION_INDEX.md) - 完整文档索引 | Complete documentation index
+- [许可证](./LICENSE) - MIT 许可证 | MIT License
 
 ---
 
 ## 🛠️ 技术栈 | Tech Stack
 
-- **框架 | Framework**: [Next.js 16](https://nextjs.org/) with App Router
-- **语言 | Language**: [TypeScript](https://www.typescriptlang.org/)
-- **样式 | Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **动画 | Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **框架 | Framework**: [Next.js 16.0.2](https://nextjs.org/) with App Router
+- **语言 | Language**: [TypeScript 5](https://www.typescriptlang.org/)
+- **样式 | Styling**: [Tailwind CSS v4.1.17](https://tailwindcss.com/)
+- **动画 | Animations**: [Framer Motion](https://www.framer.com/motion/) + [GSAP](https://gsap.com/)
 - **图标 | Icons**: [Lucide React](https://lucide.dev/)
+- **图表 | Charts**: [Recharts](https://recharts.org/)
+- **UI 组件 | UI Components**: [Radix UI](https://www.radix-ui.com/)
 - **构建工具 | Build**: Turbopack (built-in)
 
 ---
@@ -119,14 +140,21 @@ muying-admin/
 ```bash
 # 开发 | Development
 npm run dev          # 启动开发服务器 | Start dev server
-
-# 生产 | Production
 npm run build        # 构建生产版本 | Build for production
 npm start            # 启动生产服务器 | Start production server
 
 # 代码质量 | Code Quality
 npm run lint         # 运行 ESLint | Run ESLint
 npm run type-check   # TypeScript 类型检查 | Type checking
+npm run format       # 代码格式化 | Format code with Prettier
+npm run check        # 运行所有检查 | Run all checks
+
+# 工具脚本 | Utility Scripts
+npm run setup        # 项目初始化 | Project setup
+npm run health       # 健康检查 | Health check
+npm run deploy       # 部署脚本 | Deploy script
+npm run clean        # 清理构建文件 | Clean build files
+npm run reinstall    # 重新安装依赖 | Reinstall dependencies
 ```
 
 ---
@@ -181,12 +209,14 @@ const products = await productsApi.getList(1, 10);
 - 🌈 渐变色系统 | Gradient color system
 - 📱 移动端优化 | Mobile optimized
 
-### 🔄 即将推出 | Coming Soon
+### 🔄 可扩展功能 | Extensible Features
 
-- 📈 数据分析图表 | Analytics charts
-- 🔔 实时通知 | Real-time notifications
-- 📊 数据报表导出 | Data export
-- 🔐 权限管理系统 | Permission system
+- 📈 高级数据分析 | Advanced analytics
+- 🔔 实时通知推送 | Real-time push notifications
+- 📊 多格式报表导出 | Multi-format report export
+- 🔐 细粒度权限控制 | Fine-grained permission control
+- 🌐 多语言国际化 | Multi-language i18n
+- 📦 批量操作功能 | Batch operations
 
 ---
 
@@ -200,12 +230,61 @@ The system is fully functional with complete documentation and ready for deploym
 
 ---
 
+## � 部术署 | Deployment
+
+### Vercel 部署 | Deploy on Vercel
+
+```bash
+# 一键部署 | One-click deploy
+vercel
+```
+
+### Docker 部署 | Deploy with Docker
+
+```bash
+# 构建镜像 | Build image
+docker build -t muying-admin .
+
+# 运行容器 | Run container
+docker run -p 3000:3000 muying-admin
+```
+
+### 生产环境配置 | Production Configuration
+
+确保设置以下环境变量 | Make sure to set these environment variables:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-api-domain.com
+NODE_ENV=production
+```
+
+---
+
+## 🔒 环境变量 | Environment Variables
+
+创建 `.env.local` 文件 | Create `.env.local` file:
+
+```env
+# API 配置 | API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# 应用配置 | App Configuration
+NEXT_PUBLIC_APP_NAME=母婴商城管理系统
+NEXT_PUBLIC_APP_VERSION=0.1.0
+
+# 可选配置 | Optional
+# NEXT_PUBLIC_ENABLE_ANALYTICS=true
+```
+
+---
+
 ## 📞 技术支持 | Support
 
 如有问题 | For issues:
 - 📖 查看文档 | Check [documentation](./docs/zh-CN/)
-- 🐛 提交 issue | Open an [issue](https://github.com/your-repo/issues)
-- 💬 加入社区 | Join our community
+- � 故障排查 s| See [troubleshooting guide](./docs/zh-CN/troubleshooting.md)
+- � 提交 i ssue | Open an issue on GitHub
+- 💬 技术交流 | Technical discussions welcome
 
 ---
 

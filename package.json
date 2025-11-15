@@ -8,7 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "setup": "node scripts/setup.js || bash scripts/setup.sh",
+    "health": "bash scripts/check-health.sh",
+    "deploy": "bash scripts/deploy.sh",
+    "clean": "rm -rf .next node_modules",
+    "reinstall": "npm run clean && npm install",
+    "check": "npm run type-check && npm run lint"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
