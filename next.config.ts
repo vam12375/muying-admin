@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
         source: '/admin/:path*',
         destination: 'http://localhost:8080/api/admin/:path*',
       },
+      {
+        source: '/products/:path*',
+        destination: 'http://localhost:5173/products/:path*',
+      },
+      {
+        source: '/avatars/:path*',
+        destination: 'http://localhost:5173/avatars/:path*',
+      },
     ];
   },
 };
