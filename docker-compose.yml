@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # 前端管理系统 | Frontend Admin Dashboard
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: muying-admin
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+      - NEXT_PUBLIC_APP_NAME=母婴商城管理系统
+      - NEXT_PUBLIC_APP_VERSION=0.1.0
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - muying-network
+
+  # 后端服务 | Backend Service (示例配置)
+  # 取消注释以启用 | Uncomment to enable
+  # backend:
+  #   image: openjdk:17-jdk-slim
+  #   container_name: muying-backend
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=prod
+  #     - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/muying_mall
+  #     - SPRING_DATASOURCE_USERNAME=root
+  #     - SPRING_DATASOURCE_PASSWORD=your_password
+  #   volumes:
+  #     - ./backend/target/muying-mall.jar:/app/app.jar
+  #   command: java -jar /app/app.jar
+  #   depends_on:
+  #     - db
+  #   restart: unless-stopped
+  #   networks:
+  #     - muying-network
+
+  # 数据库 | Database (示例配置)
+  # 取消注释以启用 | Uncomment to enable
+  # db:
+  #   image: mysql:8.0
+  #   container_name: muying-db
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=your_password
+  #     - MYSQL_DATABASE=muying_mall
+  #     - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+  #     - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+  #   volumes:
+  #     - mysql-data:/var/lib/mysql
+  #   restart: unless-stopped
+  #   networks:
+  #     - muying-network
+
+networks:
+  muying-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
