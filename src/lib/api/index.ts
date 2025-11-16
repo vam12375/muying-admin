@@ -5,9 +5,10 @@
  * Source: 基于后端 Spring Boot 接口实现
  */
 
-// 开发环境使用 Next.js 代理（空字符串表示使用相对路径）
-// 生产环境需要配置完整的后端 URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// 开发环境：直接请求后端 API（通过环境变量配置）
+// 生产环境：通过 Nginx 反向代理
+// 注意：NEXT_PUBLIC_API_URL 应该包含 /api 前缀
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 // 不需要 token 的白名单路径
 const AUTH_WHITELIST = ['/admin/login', '/public'];
@@ -61,7 +62,9 @@ export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit & { params?: Record<string, any> } = {}
 ): Promise<ApiResponse<T>> {
+  // 规范化路径：确保以 / 开头，移除多余的斜杠
   let url = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  url = url.replace(/\/+/g, '/'); // 将连续的斜杠替换为单个斜杠
   
   // 处理查询参数
   if (options.params) {
@@ -77,7 +80,16 @@ export async function fetchApi<T>(
     }
   }
   
-  const fullUrl = `${API_BASE_URL}${url}`;
+  // 为 GET 请求添加时间戳，防止缓存（与旧版本保持一致）
+  const method = (options.method || 'GET').toUpperCase();
+  if (method === 'GET') {
+    const separator = url.includes('?') ? '&' : '?';
+    url += `${separator}_t=${new Date().getTime()}`;
+  }
+  
+  // 构建完整URL：确保API_BASE_URL和url之间没有重复的斜杠
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  const fullUrl = `${baseUrl}${url}`;
   
   const needAuth = isAuthRequired(url);
   const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
