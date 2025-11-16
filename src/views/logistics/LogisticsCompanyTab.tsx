@@ -1,15 +1,18 @@
 /**
- * 物流公司Tab组件
- * Logistics Company Tab Component
+ * 物流公司Tab组件（全新重构版）
+ * Logistics Company Tab Component (Redesigned)
  * 
+ * 特性：GSAP动画、Logo展示、现代化卡片布局
  * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit, Trash2, Power, PowerOff } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
+import { CompanyCard } from '@/components/logistics/CompanyCard';
+import { useLogisticsGSAP } from '@/hooks/useLogisticsGSAP';
 import { 
   getLogisticsCompanies, 
   addLogisticsCompany, 
@@ -24,7 +27,7 @@ const LogisticsCompanyTab: React.FC = () => {
   const [companies, setCompanies] = useState<LogisticsCompany[]>([]);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 15,
     total: 0
   });
 
@@ -44,6 +47,11 @@ const LogisticsCompanyTab: React.FC = () => {
     logo: '',
     sortOrder: 0
   });
+
+  // Refs
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const { animateModal } = useLogisticsGSAP();
 
   // 加载物流公司列表
   const loadCompanies = async () => {
@@ -87,6 +95,11 @@ const LogisticsCompanyTab: React.FC = () => {
       sortOrder: 0
     });
     setModalVisible(true);
+    setTimeout(() => {
+      if (modalRef.current) {
+        animateModal(modalRef.current, true);
+      }
+    }, 50);
   };
 
   // 打开编辑模态框
@@ -104,6 +117,11 @@ const LogisticsCompanyTab: React.FC = () => {
       sortOrder: company.sortOrder
     });
     setModalVisible(true);
+    setTimeout(() => {
+      if (modalRef.current) {
+        animateModal(modalRef.current, true);
+      }
+    }, 50);
   };
 
   // 提交表单
@@ -148,100 +166,42 @@ const LogisticsCompanyTab: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 操作栏 */}
-      <div className="flex justify-between items-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex justify-between items-center bg-white dark:bg-gray-800 rounded-2xl p-6 
+                   shadow-lg border border-gray-200 dark:border-gray-700"
+      >
         <div className="text-sm text-gray-600 dark:text-gray-400">
-          共 {pagination.total} 家物流公司
+          共 <span className="text-2xl font-bold text-blue-600 mx-2">{pagination.total}</span> 家物流公司
         </div>
         <button
           onClick={handleAdd}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg
-                   hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl
+                   hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl
+                   flex items-center gap-2 font-medium"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           添加物流公司
         </button>
-      </div>
+      </motion.div>
 
-      {/* 物流公司列表 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* 物流公司列表 - 优化为5列布局，每行3个卡片 */}
+      <div ref={cardsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
         {loading ? (
           <div className="col-span-full text-center py-12 text-gray-500">加载中...</div>
         ) : companies.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-500">暂无物流公司</div>
         ) : (
           companies.map((company, index) => (
-            <motion.div
+            <CompanyCard
               key={company.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 }}
-              className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700
-                       hover:shadow-lg transition-all p-6"
-            >
-              {/* 公司信息 */}
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                      {company.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 font-mono">{company.code}</p>
-                  </div>
-                  <div className={`px-2 py-1 rounded text-xs font-medium ${
-                    company.status === 1 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {company.status === 1 ? '启用' : '禁用'}
-                  </div>
-                </div>
-
-                {company.contact && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    联系人: {company.contact}
-                  </div>
-                )}
-
-                {company.phone && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    电话: {company.phone}
-                  </div>
-                )}
-
-                <div className="text-xs text-gray-500">
-                  排序: {company.sortOrder}
-                </div>
-              </div>
-
-              {/* 操作按钮 */}
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                <button
-                  onClick={() => toggleStatus(company)}
-                  className={`flex-1 px-3 py-2 rounded-lg transition-all flex items-center justify-center gap-2 ${
-                    company.status === 1
-                      ? 'text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20'
-                      : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
-                  }`}
-                  title={company.status === 1 ? '禁用' : '启用'}
-                >
-                  {company.status === 1 ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
-                </button>
-                <button
-                  onClick={() => handleEdit(company)}
-                  className="flex-1 px-3 py-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20
-                           rounded-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(company)}
-                  className="flex-1 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20
-                           rounded-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
+              company={company}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onToggleStatus={toggleStatus}
+              delay={index * 0.04}
+            />
           ))
         )}
       </div>
@@ -290,18 +250,22 @@ const LogisticsCompanyTab: React.FC = () => {
             />
 
             {/* 模态框 */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            >
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div
+                ref={modalRef}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              >
                 {/* 模态框头部 */}
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     {modalMode === 'add' ? '添加物流公司' : '编辑物流公司'}
                   </h2>
+                  <button
+                    onClick={() => setModalVisible(false)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
 
                 {/* 模态框内容 */}
@@ -435,25 +399,26 @@ const LogisticsCompanyTab: React.FC = () => {
                 </div>
 
                 {/* 模态框底部 */}
-                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+                <div className="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
                   <button
                     onClick={() => setModalVisible(false)}
-                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300
-                             rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                    className="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300
+                             rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium"
                   >
                     取消
                   </button>
                   <button
                     onClick={handleSubmit}
                     disabled={!formData.code || !formData.name}
-                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg
-                             hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl
+                             hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50
+                             shadow-lg hover:shadow-xl font-medium"
                   >
-                    确认
+                    {modalMode === 'add' ? '添加' : '保存'}
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>
