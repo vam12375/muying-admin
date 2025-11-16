@@ -5,13 +5,16 @@
 
 /**
  * 订单状态枚举
+ * Source: 基于后端 OrderStatus 枚举
  */
 export type OrderStatus = 
   | 'pending_payment'    // 待支付
   | 'pending_shipment'   // 待发货
   | 'shipped'            // 已发货
   | 'completed'          // 已完成
-  | 'cancelled';         // 已取消
+  | 'cancelled'          // 已取消
+  | 'refunding'          // 退款中
+  | 'refunded';          // 已退款
 
 /**
  * 支付方式枚举

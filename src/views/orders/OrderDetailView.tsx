@@ -21,9 +21,15 @@ import {
   Truck
 } from 'lucide-react';
 import { OrderStatusTag } from '@/components/orders/OrderStatusTag';
-import { getOrderDetail } from '@/lib/api/orders';
-import type { Order } from '@/types/order';
+import { OrderFlowChart } from '@/components/orders/OrderFlowChart';
+import { OrderTimeline } from '@/components/orders/OrderTimeline';
+import { ShipDialog } from '@/components/orders/ShipDialog';
+import { getOrderDetail, shipOrder as shipOrderApi } from '@/lib/api/orders';
+import { getLogisticsByOrderId, getLogisticsTracks } from '@/lib/api/logistics';
+import type { Order, OrderHistory } from '@/types/order';
+import type { Logistics, LogisticsTrack } from '@/types/logistics';
 import { formatDate, formatPrice } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 interface OrderDetailViewProps {
   orderId: string;
@@ -32,6 +38,10 @@ interface OrderDetailViewProps {
 export function OrderDetailView({ orderId }: OrderDetailViewProps) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [orderHistory, setOrderHistory] = useState<OrderHistory[]>([]);
+  const [shipDialogOpen, setShipDialogOpen] = useState(false);
+  const [logisticsInfo, setLogisticsInfo] = useState<Logistics | null>(null);
+  const [logisticsTracks, setLogisticsTracks] = useState<LogisticsTrack[]>([]);
 
   useEffect(() => {
     fetchOrderDetail();
@@ -43,12 +53,110 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
       const response = await getOrderDetail(orderId);
       if (response.success && response.data) {
         setOrder(response.data);
+        generateOrderHistory(response.data);
+        
+        // 如果订单已发货，获取物流信息
+        if (response.data.status === 'shipped' || response.data.status === 'completed') {
+          fetchLogisticsInfo(response.data.orderId);
+        }
       }
     } catch (error) {
       console.error('获取订单详情失败:', error);
     } finally {
       setLoading(false);
     }
+  };
+  
+  // 获取物流信息和追踪记录
+  const fetchLogisticsInfo = async (orderId: number) => {
+    try {
+      const logistics = await getLogisticsByOrderId(orderId);
+      if (logistics) {
+        setLogisticsInfo(logistics);
+        // 获取物流追踪记录
+        const tracks = await getLogisticsTracks(logistics.id);
+        setLogisticsTracks(tracks);
+        // 重新生成订单历史，包含物流轨迹
+        if (order) {
+          generateOrderHistory(order, tracks);
+        }
+      }
+    } catch (error) {
+      console.error('获取物流信息失败:', error);
+    }
+  };
+  
+  // 生成订单历史记录（包含物流轨迹）
+  const generateOrderHistory = (orderData: Order, tracks: LogisticsTrack[] = []) => {
+    const history: OrderHistory[] = [
+      {
+        id: '1',
+        title: '订单创建',
+        time: formatDate(orderData.createTime, 'datetime'),
+        description: `订单号: ${orderData.orderNo}`,
+        type: 'default'
+      }
+    ];
+    
+    if (orderData.payTime) {
+      history.push({
+        id: '2',
+        title: '订单支付',
+        time: formatDate(orderData.payTime, 'datetime'),
+        description: `支付方式: ${getPaymentMethodText(orderData.paymentMethod)}`,
+        type: 'success'
+      });
+    }
+    
+    if (orderData.status === 'shipped' || orderData.status === 'completed') {
+      history.push({
+        id: '3',
+        title: '订单发货',
+        time: orderData.shippingTime ? formatDate(orderData.shippingTime, 'datetime') : '-',
+        description: `物流公司: ${orderData.shippingCompany || '-'}, 物流单号: ${orderData.trackingNo || '-'}`,
+        type: 'processing'
+      });
+      
+      // 添加物流追踪记录
+      if (tracks && tracks.length > 0) {
+        // 按时间倒序排列（最新的在前）
+        const sortedTracks = [...tracks].sort((a, b) => 
+          new Date(b.trackingTime).getTime() - new Date(a.trackingTime).getTime()
+        );
+        
+        sortedTracks.forEach((track, index) => {
+          history.push({
+            id: `track-${track.id}`,
+            title: track.status,
+            time: formatDate(track.trackingTime, 'datetime'),
+            description: track.content + (track.location ? ` · ${track.location}` : ''),
+            type: index === 0 ? 'processing' : 'default'
+          });
+        });
+      }
+    }
+    
+    if (orderData.status === 'completed') {
+      history.push({
+        id: '4',
+        title: '订单完成',
+        time: orderData.completionTime ? formatDate(orderData.completionTime, 'datetime') : '-',
+        description: '订单已完成，感谢您的购买！',
+        type: 'success'
+      });
+    }
+    
+    if (orderData.status === 'cancelled') {
+      history.push({
+        id: '5',
+        title: '订单取消',
+        time: orderData.cancelTime ? formatDate(orderData.cancelTime, 'datetime') : '-',
+        description: orderData.cancelReason || '订单已取消',
+        type: 'error'
+      });
+    }
+    
+    setOrderHistory(history);
   };
 
   const handleBack = () => {
@@ -61,6 +169,100 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
 
   const handleExport = () => {
     alert('导出功能待实现');
+  };
+  
+  // 发货
+  const handleShip = () => {
+    setShipDialogOpen(true);
+  };
+  
+  // 确认发货
+  const handleConfirmShip = async (data: any) => {
+    if (!order) return;
+    
+    try {
+      const response = await shipOrderApi(order.orderId, data);
+      if (response.success) {
+        toast({
+          title: '发货成功',
+          description: '订单已成功发货',
+          variant: 'default'
+        });
+        fetchOrderDetail();
+      } else {
+        throw new Error(response.message || '发货失败');
+      }
+    } catch (error: any) {
+      toast({
+        title: '发货失败',
+        description: error.message || '发货操作失败，请重试',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+  
+  // 获取订单流程节点数据
+  const getOrderFlowNodes = () => {
+    if (!order) return [];
+    
+    const baseNodes = [
+      {
+        key: 'created',
+        title: '下单',
+        time: formatDate(order.createTime, 'datetime'),
+        status: 'completed' as const
+      },
+      {
+        key: 'paid',
+        title: '支付',
+        time: order.payTime ? formatDate(order.payTime, 'datetime') : '',
+        status: 'waiting' as const
+      },
+      {
+        key: 'shipped',
+        title: '发货',
+        time: order.shippingTime ? formatDate(order.shippingTime, 'datetime') : '',
+        status: 'waiting' as const
+      },
+      {
+        key: 'completed',
+        title: '完成',
+        time: order.completionTime ? formatDate(order.completionTime, 'datetime') : '',
+        status: 'waiting' as const
+      }
+    ];
+    
+    // 根据订单状态设置节点状态
+    if (order.status === 'pending_payment') {
+      // 待支付
+    } else if (order.status === 'pending_shipment') {
+      baseNodes[1].status = 'completed';
+    } else if (order.status === 'shipped') {
+      baseNodes[1].status = 'completed';
+      baseNodes[2].status = 'completed';
+    } else if (order.status === 'completed') {
+      baseNodes[1].status = 'completed';
+      baseNodes[2].status = 'completed';
+      baseNodes[3].status = 'completed';
+    } else if (order.status === 'cancelled') {
+      return [
+        {
+          key: 'created',
+          title: '下单',
+          time: formatDate(order.createTime, 'datetime'),
+          status: 'completed' as const
+        },
+        {
+          key: 'cancelled',
+          title: '已取消',
+          time: order.cancelTime ? formatDate(order.cancelTime, 'datetime') : '',
+          status: 'failed' as const
+        }
+      ];
+    }
+    
+    return baseNodes;
   };
 
   // 获取支付方式文本
@@ -130,6 +332,7 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
           <div className="flex gap-2">
             {order.status === 'pending_shipment' && (
               <button
+                onClick={handleShip}
                 className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 <Truck className="h-4 w-4" />
@@ -157,69 +360,12 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 rounded-lg bg-white p-6 shadow-sm border border-gray-200"
+          className="mb-6"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                order.status !== 'cancelled' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
-              }`}>
-                <Package className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-900">下单</div>
-                <div className="text-xs text-gray-500">{formatDate(order.createTime, 'datetime')}</div>
-              </div>
-            </div>
-
-            <div className="h-px flex-1 bg-gray-200 mx-4"></div>
-
-            <div className="flex items-center gap-4">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                order.payTime ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-              }`}>
-                <CreditCard className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-900">支付</div>
-                <div className="text-xs text-gray-500">
-                  {order.payTime ? formatDate(order.payTime, 'datetime') : '-'}
-                </div>
-              </div>
-            </div>
-
-            <div className="h-px flex-1 bg-gray-200 mx-4"></div>
-
-            <div className="flex items-center gap-4">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                order.shippingTime ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-              }`}>
-                <Truck className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-900">发货</div>
-                <div className="text-xs text-gray-500">
-                  {order.shippingTime ? formatDate(order.shippingTime, 'datetime') : '-'}
-                </div>
-              </div>
-            </div>
-
-            <div className="h-px flex-1 bg-gray-200 mx-4"></div>
-
-            <div className="flex items-center gap-4">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                order.completionTime ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-              }`}>
-                <Package className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-900">完成</div>
-                <div className="text-xs text-gray-500">
-                  {order.completionTime ? formatDate(order.completionTime, 'datetime') : '-'}
-                </div>
-              </div>
-            </div>
-          </div>
+          <OrderFlowChart
+            currentNodeKey={order.status}
+            nodes={getOrderFlowNodes()}
+          />
         </motion.div>
 
         {/* 订单信息 */}
@@ -337,7 +483,7 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
               {order.products.map((product) => (
                 <div key={product.id} className="flex items-center gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                   <img
-                    src={product.productImage || '/placeholder.png'}
+                    src={product.productImage ? (product.productImage.startsWith('http') ? product.productImage : `http://localhost:5173/products/${product.productImage}`) : '/placeholder.png'}
                     alt={product.productName}
                     className="h-20 w-20 rounded-lg object-cover"
                   />
@@ -433,7 +579,34 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
             </div>
           </motion.div>
         )}
+        
+        {/* 订单动态 */}
+        {orderHistory.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="rounded-lg bg-white p-6 shadow-sm border border-gray-200"
+          >
+            <OrderTimeline title="订单动态" items={orderHistory} />
+          </motion.div>
+        )}
       </div>
+      
+      {/* 发货对话框 */}
+      {order && (
+        <ShipDialog
+          open={shipDialogOpen}
+          onClose={() => setShipDialogOpen(false)}
+          onConfirm={handleConfirmShip}
+          orderNo={order.orderNo}
+          defaultReceiver={{
+            name: order.receiverName,
+            phone: order.receiverPhone,
+            address: `${order.receiverProvince} ${order.receiverCity} ${order.receiverDistrict} ${order.receiverAddress}`
+          }}
+        />
+      )}
     </div>
   );
 }
