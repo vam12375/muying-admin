@@ -7,7 +7,8 @@
  * 分页结果
  */
 export interface PageResult<T> {
-  records: T[];              // 记录列表
+  records?: T[];             // 记录列表（MyBatis Plus 默认字段）
+  list?: T[];                // 记录列表（部分后端可能使用此字段）
   total: number;             // 总记录数
   current: number;           // 当前页码
   size: number;              // 每页大小

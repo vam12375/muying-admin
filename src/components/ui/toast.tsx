@@ -5,9 +5,10 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
+import { setGlobalToast } from '@/lib/utils/toast';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -51,6 +52,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
+
+  // 注册全局 toast 函数
+  useEffect(() => {
+    setGlobalToast(showToast);
+  }, [showToast]);
 
   return (
     <ToastContext.Provider value={{ showToast }}>

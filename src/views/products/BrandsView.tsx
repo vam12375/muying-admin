@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, Edit, Trash2, Package, X, Save } from 'lucide-react';
-import { getBrandList, createBrand, updateBrand, deleteBrand } from '@/lib/api/brands';
+import { getBrandList, getAllBrands, createBrand, updateBrand, deleteBrand } from '@/lib/api/brands';
 import { formatDate } from '@/lib/utils';
+import { getBrandLogoUrl } from '@/lib/utils/image';
+import { showSuccess, showError, showWarning } from '@/lib/utils/toast';
 import type { Brand, BrandFormData } from '@/types/brand';
 
 /**
@@ -44,23 +46,79 @@ export function BrandsView() {
 
   /**
    * 加载品牌列表
+   * 
+   * 注意：由于后端 /admin/brands 默认只返回启用状态的品牌，
+   * 我们需要使用 /admin/brands/all 获取所有品牌，然后在前端进行分页和搜索
    */
   const loadBrands = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await getBrandList({ page: currentPage, size: pageSize, keyword: searchKeyword });
+      console.log('[Brands] 使用 getAllBrands 获取所有品牌（包括禁用的）');
       
-      console.log('[Brands] API Response:', response);
+      // 临时方案：使用 getAllBrands 获取所有品牌
+      const allBrandsResponse = await getAllBrands();
       
-      if (response.success && response.data) {
-        const data = response.data;
-        // 后端返回的字段是 list 而不是 records
-        const brandList = data.list || data.records || [];
-        console.log('[Brands] Brand list:', brandList);
+      console.log('[Brands] getAllBrands Response:', allBrandsResponse);
+      
+      if (allBrandsResponse.success && allBrandsResponse.data) {
+        let allBrands = allBrandsResponse.data;
+      
+        console.log('[Brands] All brands count:', allBrands.length);
+        
+        // 前端搜索过滤
+        if (searchKeyword) {
+          allBrands = allBrands.filter(brand => 
+            brand.name.toLowerCase().includes(searchKeyword.toLowerCase())
+          );
+          console.log('[Brands] After search filter:', allBrands.length);
+        }
+        
+        // 前端分页
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const pagedBrands = allBrands.slice(startIndex, endIndex);
+        
+        console.log('[Brands] Pagination:', { startIndex, endIndex, pagedCount: pagedBrands.length });
+        
+        // 数据映射：处理后端字段名不一致的问题
+        // 后端可能返回 id 而不是 brandId，showStatus 而不是 status
+        const brandList = pagedBrands.map((brand: any, index: number) => {
+          // 详细日志：输出每个品牌的原始数据
+          if (index < 3) {  // 只输出前3条，避免日志过多
+            console.log(`[Brands] Raw brand #${index}:`, {
+              id: brand.id,
+              brandId: brand.brandId,
+              name: brand.name,
+              status: brand.status,
+              showStatus: brand.showStatus,
+              allKeys: Object.keys(brand)
+            });
+          }
+          
+          const mappedBrand = {
+            ...brand,
+            brandId: brand.brandId || brand.id,  // 优先使用 brandId，如果不存在则使用 id
+            status: brand.status !== undefined ? brand.status : brand.showStatus,  // 优先使用 status，如果不存在则使用 showStatus
+          };
+          
+          if (index < 3) {
+            console.log(`[Brands] Mapped brand #${index}:`, {
+              brandId: mappedBrand.brandId,
+              name: mappedBrand.name,
+              status: mappedBrand.status
+            });
+          }
+          
+          return mappedBrand;
+        });
+        
+        console.log('[Brands] Final brand list:', brandList);
+        
+        // 设置品牌列表和总数
         setBrands(brandList);
-        setTotal(data.total || 0);
+        setTotal(allBrands.length);  // 使用过滤后的总数
       }
     } catch (err: any) {
       console.error('加载品牌列表失败:', err);
@@ -101,12 +159,14 @@ export function BrandsView() {
   const handleEdit = (brand: Brand) => {
     setModalMode('edit');
     setEditingBrand(brand);
+    // 确保使用正确的字段值
+    const statusValue = brand.status !== undefined ? brand.status : (brand.showStatus !== undefined ? brand.showStatus : 1);
     setFormData({
       name: brand.name,
       logo: brand.logo || '',
       description: brand.description || '',
       sort: brand.sort || 0,
-      status: brand.status || 1,
+      status: statusValue,
     });
     setShowModal(true);
   };
@@ -133,7 +193,7 @@ export function BrandsView() {
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      alert('请输入品牌名称');
+      showWarning('请输入品牌名称');
       return;
     }
 
@@ -142,17 +202,17 @@ export function BrandsView() {
 
       if (modalMode === 'create') {
         await createBrand(formData);
-        alert('创建品牌成功');
+        showSuccess('创建品牌成功');
       } else if (editingBrand) {
         await updateBrand(editingBrand.brandId, formData);
-        alert('更新品牌成功');
+        showSuccess('更新品牌成功');
       }
 
       handleCloseModal();
       loadBrands();
     } catch (err: any) {
       console.error('提交失败:', err);
-      alert(err.message || '操作失败');
+      showError(err.message || '操作失败');
     } finally {
       setSubmitting(false);
     }
@@ -168,11 +228,11 @@ export function BrandsView() {
 
     try {
       await deleteBrand(brand.brandId);
-      alert('删除品牌成功');
+      showSuccess('删除品牌成功');
       loadBrands();
     } catch (err: any) {
       console.error('删除失败:', err);
-      alert(err.message || '删除失败');
+      showError(err.message || '删除失败');
     }
   };
 
@@ -186,11 +246,12 @@ export function BrandsView() {
 
   /**
    * 获取状态样式
+   * 参考旧系统：启用=绿色，禁用=红色
    */
   const getStatusStyle = (status?: number) => {
     return status === 1
       ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-      : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+      : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400';
   };
 
 
@@ -303,29 +364,54 @@ export function BrandsView() {
                   </td>
                 </tr>
               ) : (
-                brands.map((brand, index) => (
-                  <motion.tr
-                    key={brand.brandId}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
-                      {brand.brandId}
-                    </td>
+                brands.map((brand, index) => {
+                  // 调试日志：输出每个品牌的关键字段
+                  if (index === 0) {
+                    console.log('[Brands] First brand data:', {
+                      brandId: brand.brandId,
+                      id: brand.id,
+                      status: brand.status,
+                      showStatus: brand.showStatus,
+                      name: brand.name
+                    });
+                  }
+                  
+                  return (
+                    <motion.tr
+                      key={brand.brandId || brand.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
+                        {brand.brandId || brand.id || '-'}
+                      </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {brand.logo ? (
-                        <img
-                          src={brand.logo}
-                          alt={brand.name}
-                          className="h-10 w-10 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                      <div className="relative h-10 w-10">
+                        {brand.logo ? (
+                          <img
+                            src={getBrandLogoUrl(brand.logo)}
+                            alt={brand.name}
+                            className="h-10 w-10 rounded object-cover"
+                            onError={(e) => {
+                              // 图片加载失败时显示占位符
+                              console.error(`[Brands] 图片加载失败: ${brand.name}, URL: ${getBrandLogoUrl(brand.logo)}`);
+                              e.currentTarget.style.display = 'none';
+                              const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (placeholder) {
+                                placeholder.classList.remove('hidden');
+                              }
+                            }}
+                            onLoad={() => {
+                              console.log(`[Brands] 图片加载成功: ${brand.name}, URL: ${getBrandLogoUrl(brand.logo)}`);
+                            }}
+                          />
+                        ) : null}
+                        <div className={`h-10 w-10 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center ${brand.logo ? 'hidden' : ''}`}>
                           <Package className="h-5 w-5 text-slate-400" />
                         </div>
-                      )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -379,7 +465,8 @@ export function BrandsView() {
                       </div>
                     </td>
                   </motion.tr>
-                ))
+                );
+              })
               )}
             </tbody>
           </table>
@@ -473,7 +560,7 @@ export function BrandsView() {
                   {formData.logo && (
                     <div className="mt-2">
                       <img
-                        src={formData.logo}
+                        src={getBrandLogoUrl(formData.logo)}
                         alt="Logo预览"
                         className="h-20 w-20 rounded object-cover border border-slate-200 dark:border-slate-600"
                         onError={(e) => {

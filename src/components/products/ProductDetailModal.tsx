@@ -58,7 +58,7 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
                 {/* 商品图片 */}
                 <div className="space-y-4">
                   <img
-                    src={product.productImg || '/placeholder.png'}
+                    src={product.productImg ? (product.productImg.startsWith('http') ? product.productImg : `http://localhost:5173/products/${product.productImg}`) : '/placeholder.png'}
                     alt={product.productName}
                     className="w-full h-80 object-cover rounded-lg"
                   />

@@ -10,14 +10,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Search, Plus, Edit2, Trash2, Eye, MoreVertical,
-  Package, TrendingUp, AlertCircle, CheckCircle
+  Search, Plus, Edit2, Trash2, Eye,
+  Package, AlertCircle, CheckCircle
 } from 'lucide-react';
 import { getProductList, deleteProduct, updateProductStatus, getProductDetail, createProduct, updateProduct } from '@/lib/api/products';
 import { getAllBrands } from '@/lib/api/brands';
 import { getCategoryList } from '@/lib/api/categories';
 import { ProductDetailModal } from '@/components/products/ProductDetailModal';
 import { ProductEditModal } from '@/components/products/ProductEditModal';
+import { getProductImageUrl } from '@/lib/utils/image';
+import { showSuccess, showError, showWarning } from '@/lib/utils/toast';
 import type { Product, ProductFormData } from '@/types/product';
 import type { Brand } from '@/types/brand';
 import type { Category } from '@/types/category';
@@ -115,12 +117,12 @@ export function ProductsView() {
     try {
       const response = await deleteProduct(id);
       if (response.success) {
-        alert('删除成功');
+        showSuccess('删除成功');
         loadProducts();
       }
     } catch (error) {
       console.error('删除商品失败:', error);
-      alert('删除失败');
+      showError('删除失败');
     }
   };
 
@@ -131,12 +133,12 @@ export function ProductsView() {
     try {
       const response = await updateProductStatus(id, newStatus);
       if (response.success) {
-        alert(`${newStatus === 1 ? '上架' : '下架'}成功`);
+        showSuccess(`${newStatus === 1 ? '上架' : '下架'}成功`);
         loadProducts();
       }
     } catch (error) {
       console.error('更新商品状态失败:', error);
-      alert('操作失败');
+      showError('操作失败');
     }
   };
 
@@ -150,7 +152,7 @@ export function ProductsView() {
       }
     } catch (error) {
       console.error('获取商品详情失败:', error);
-      alert('获取商品详情失败');
+      showError('获取商品详情失败');
     }
   };
 
@@ -164,7 +166,7 @@ export function ProductsView() {
       }
     } catch (error) {
       console.error('获取商品详情失败:', error);
-      alert('获取商品详情失败');
+      showError('获取商品详情失败');
     }
   };
 
@@ -185,7 +187,7 @@ export function ProductsView() {
       }
       
       if (response.success) {
-        alert(selectedProduct ? '更新成功' : '创建成功');
+        showSuccess(selectedProduct ? '更新成功' : '创建成功');
         loadProducts();
       }
     } catch (error) {
@@ -247,7 +249,7 @@ export function ProductsView() {
               placeholder="搜索商品名称/品牌"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -354,7 +356,7 @@ export function ProductsView() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <img
-                          src={product.productImg || '/placeholder.png'}
+                          src={getProductImageUrl(product.productImg)}
                           alt={product.productName}
                           className="w-12 h-12 rounded-lg object-cover"
                         />

@@ -351,7 +351,7 @@ export function ProductEditModal({
                   )}
                   {formData.productImg && (
                     <img
-                      src={formData.productImg}
+                      src={formData.productImg.startsWith('http') ? formData.productImg : `http://localhost:5173/products/${formData.productImg}`}
                       alt="预览"
                       className="mt-2 w-32 h-32 object-cover rounded-lg"
                     />

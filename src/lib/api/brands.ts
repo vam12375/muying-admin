@@ -14,10 +14,8 @@ import type { PageResult } from '../../types/common';
  */
 export async function getBrandList(params: BrandListParams = {}) {
   const { page = 1, size = 10, keyword } = params;
-  
   return fetchApi<PageResult<Brand>>('/admin/brands', {
-    method: 'GET',
-    params: { page, size, keyword }
+    method: 'GET'
   });
 }
 
