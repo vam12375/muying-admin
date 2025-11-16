@@ -314,7 +314,7 @@ export function OverviewView() {
               topProducts.map((product) => (
                 <div key={product.productId} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 transition-colors dark:hover:bg-slate-700">
                   <img 
-                    src={product.productImg || '/placeholder-product.png'} 
+                    src={product.productImg ? (product.productImg.startsWith('http') ? product.productImg : `http://localhost:5173/products/${product.productImg}`) : '/placeholder-product.png'} 
                     alt={product.productName} 
                     className="w-12 h-12 rounded-lg object-cover"
                     onError={(e) => {

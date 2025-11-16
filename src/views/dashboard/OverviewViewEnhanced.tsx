@@ -602,7 +602,7 @@ export function OverviewViewEnhanced() {
                         <div className="w-12 h-12 rounded-lg bg-pink-500/10 flex items-center justify-center overflow-hidden">
                           {product.productImg ? (
                             <img 
-                              src={product.productImg} 
+                              src={product.productImg.startsWith('http') ? product.productImg : `http://localhost:5173/products/${product.productImg}`} 
                               alt={product.productName}
                               className="w-full h-full object-cover"
                               onError={(e) => {
