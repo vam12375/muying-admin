@@ -1,113 +1,87 @@
 /**
- * Orders API - 订单管理
- * 对应后端: AdminOrderController (/api/admin/orders)
- * Source: 基于后端 Spring Boot 接口实现
+ * 订单管理 API
+ * Source: 基于后端 AdminOrderController
  */
 
-import { fetchApi, type ApiResponse } from './index';
-import type {
-  Order,
-  OrderListParams,
+import { fetchApi } from './index';
+import type { 
+  Order, 
+  OrderQueryParams, 
   OrderStatistics,
-  OrderPageResponse,
   ShipOrderParams,
-  OrderStatus
+  CancelOrderParams 
 } from '@/types/order';
 
-/**
- * 获取订单分页列表
- * Source: AdminOrderController.getOrderList()
- * GET /admin/orders
- */
-export async function getOrderList(
-  params: OrderListParams
-): Promise<ApiResponse<OrderPageResponse>> {
-  const queryParams = new URLSearchParams();
-  
-  if (params.page) queryParams.append('page', params.page.toString());
-  if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
-  if (params.status) queryParams.append('status', params.status);
-  if (params.orderNo) queryParams.append('orderNo', params.orderNo);
-  if (params.userId) queryParams.append('userId', params.userId.toString());
-  
-  return fetchApi<OrderPageResponse>(`/api/admin/orders?${queryParams}`);
+// 分页响应类型
+interface PaginatedResponse<T> {
+  list: T[];
+  total: number;
 }
 
 /**
- * 获取订单详情
- * Source: AdminOrderController.getOrderDetail()
- * GET /admin/orders/{id}
+ * 获取订单列表（分页）
  */
-export async function getOrderDetail(id: number): Promise<ApiResponse<Order>> {
-  return fetchApi<Order>(`/api/admin/orders/${id}`);
+export async function getOrderList(params: OrderQueryParams) {
+  return fetchApi<PaginatedResponse<Order>>('/api/admin/orders', {
+    params
+  });
 }
 
 /**
  * 获取订单统计数据
- * Source: AdminOrderController.getOrderStatistics()
- * GET /admin/orders/statistics
  */
-export async function getOrderStatistics(): Promise<ApiResponse<OrderStatistics>> {
+export async function getOrderStatistics() {
   return fetchApi<OrderStatistics>('/api/admin/orders/statistics');
 }
 
 /**
+ * 获取订单详情
+ */
+export async function getOrderDetail(id: number | string) {
+  return fetchApi<Order>(`/api/admin/orders/${id}`);
+}
+
+/**
  * 更新订单状态
- * Source: AdminOrderController.updateOrderStatus()
- * PUT /admin/orders/{id}/status
  */
 export async function updateOrderStatus(
-  id: number,
-  status: OrderStatus,
+  id: number | string,
+  status: string,
   remark?: string
-): Promise<ApiResponse<boolean>> {
-  const params = new URLSearchParams({ status });
-  if (remark) params.append('remark', remark);
-  
-  return fetchApi<boolean>(`/api/admin/orders/${id}/status?${params}`, {
-    method: 'PUT'
+) {
+  return fetchApi<boolean>(`/api/admin/orders/${id}/status`, {
+    method: 'PUT',
+    params: { status, remark }
   });
 }
 
 /**
  * 订单发货
- * Source: AdminOrderController.shipOrder()
- * PUT /admin/orders/{id}/ship
  */
-export async function shipOrder(
-  id: number,
-  params: ShipOrderParams
-): Promise<ApiResponse<boolean>> {
-  const queryParams = new URLSearchParams({
-    companyId: params.companyId.toString()
-  });
-  
-  if (params.trackingNo) queryParams.append('trackingNo', params.trackingNo);
-  if (params.receiverName) queryParams.append('receiverName', params.receiverName);
-  if (params.receiverPhone) queryParams.append('receiverPhone', params.receiverPhone);
-  if (params.receiverAddress) queryParams.append('receiverAddress', params.receiverAddress);
-  
-  return fetchApi<boolean>(`/api/admin/orders/${id}/ship?${queryParams}`, {
-    method: 'PUT'
+export async function shipOrder(id: number | string, data: ShipOrderParams) {
+  return fetchApi<boolean>(`/api/admin/orders/${id}/ship`, {
+    method: 'PUT',
+    params: data
   });
 }
 
 /**
- * 导出订单数据
- * Source: AdminOrderController.exportOrders()
- * GET /admin/orders/export
+ * 取消订单
+ * 注意：后端暂未实现此接口，需要后端添加
  */
-export async function exportOrders(params?: OrderListParams): Promise<void> {
-  const queryParams = new URLSearchParams();
-  
-  if (params?.status) queryParams.append('status', params.status);
-  if (params?.orderNo) queryParams.append('orderNo', params.orderNo);
-  if (params?.userId) queryParams.append('userId', params.userId.toString());
-  
-  const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/orders/export?${queryParams}`;
-  
-  // 使用fetch下载文件
-  const response = await fetch(url, {
+export async function cancelOrder(id: number | string, data: CancelOrderParams) {
+  return fetchApi<boolean>(`/api/admin/orders/${id}/cancel`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+/**
+ * 导出订单
+ */
+export async function exportOrders(params: OrderQueryParams) {
+  // 导出功能返回 Blob
+  const response = await fetch('/api/admin/orders/export?' + new URLSearchParams(params as any), {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -118,23 +92,17 @@ export async function exportOrders(params?: OrderListParams): Promise<void> {
     throw new Error('导出失败');
   }
   
-  const blob = await response.blob();
-  const downloadUrl = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = downloadUrl;
-  a.download = `订单数据_${new Date().toLocaleDateString()}.xlsx`;
-  document.body.appendChild(a);
-  a.click();
-  window.URL.revokeObjectURL(downloadUrl);
-  document.body.removeChild(a);
+  return response.blob();
 }
 
-// 导出为对象形式（兼容旧代码）
+// 兼容旧的对象导出方式
 export const ordersApi = {
-  getList: getOrderList,
-  getDetail: getOrderDetail,
-  getStatistics: getOrderStatistics,
-  updateStatus: updateOrderStatus,
-  ship: shipOrder,
-  export: exportOrders
+  getList: getOrderList, // 添加getList别名以兼容仪表盘调用
+  getOrderList,
+  getOrderStatistics,
+  getOrderDetail,
+  updateOrderStatus,
+  shipOrder,
+  cancelOrder,
+  exportOrders
 };
