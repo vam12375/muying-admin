@@ -32,6 +32,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { showSuccess, showError } from '@/lib/utils/toast';
 import {
   Table,
   TableBody,
@@ -56,11 +57,14 @@ import {
 import { 
   getMessageList, 
   getMessageStatistics,
-  deleteMessage 
+  deleteMessage,
+  markMessageAsRead 
 } from '@/lib/api/messages';
 import type { Message, MessageListParams, MessageStatistics } from '@/types/message';
 import { MessageFormModal } from './MessageFormModal';
 import { MessageDetailModal } from './MessageDetailModal';
+import { MessageStatCard, MessageListItem } from '@/components/messages';
+import { useRefreshAnimation } from '@/hooks/useGSAPAnimations';
 
 export function MessagesViewEnhanced() {
   // 状态管理
@@ -83,6 +87,12 @@ export function MessagesViewEnhanced() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+
+  // 刷新触发器（用于动画）
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // GSAP 动画 Hook
+  const statsContainerRef = useRefreshAnimation(refreshTrigger);
 
   // 加载消息列表
   const loadMessages = async () => {
@@ -141,27 +151,39 @@ export function MessagesViewEnhanced() {
     
     try {
       await deleteMessage(id);
+      showSuccess('删除成功');
       loadMessages();
       loadStatistics();
     } catch (error) {
       console.error('删除消息失败:', error);
-      alert('删除失败，请重试');
+      showError('删除失败，请重试');
     }
   };
 
   // 查看详情
   const handleViewDetail = async (message: Message) => {
     try {
-      // 如果需要从服务器获取完整详情，可以在这里调用 API
-      // const detail = await getMessageDetail(message.messageId);
-      // setSelectedMessage(detail);
+      // 如果消息未读，标记为已读
+      if (message.isRead === 0) {
+        await markMessageAsRead(message.messageId);
+        // 更新本地状态
+        setMessages(prevMessages => 
+          prevMessages.map(m => 
+            m.messageId === message.messageId 
+              ? { ...m, isRead: 1 } 
+              : m
+          )
+        );
+        // 刷新统计数据
+        loadStatistics();
+      }
       
-      // 目前直接使用列表中的数据
-      setSelectedMessage(message);
+      // 显示消息详情
+      setSelectedMessage({ ...message, isRead: 1 });
       setIsDetailModalOpen(true);
     } catch (error) {
       console.error('获取消息详情失败:', error);
-      alert('获取消息详情失败，请重试');
+      showError('获取消息详情失败，请重试');
     }
   };
 
@@ -193,95 +215,56 @@ export function MessagesViewEnhanced() {
           </div>
           <Button 
             onClick={() => setIsFormModalOpen(true)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-500/30 transition-all duration-200"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
           >
             <Plus className="w-4 h-4 mr-2" />
             新建消息
           </Button>
         </div>
 
-        {/* 统计卡片 */}
+        {/* 统计卡片 - 使用 GSAP 动画组件 */}
         {statistics && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* 总消息卡片 */}
-            <div className="group relative bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl shadow-blue-500/20 hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Bell className="w-6 h-6" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">总消息</p>
-                    <p className="text-3xl font-bold mt-1">{statistics.totalMessages}</p>
-                  </div>
-                </div>
-                <div className="flex items-center text-sm opacity-90">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  <span>系统消息总数</span>
-                </div>
-              </div>
-            </div>
+          <div ref={statsContainerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <MessageStatCard
+              title="总消息"
+              value={statistics.totalMessages}
+              description="系统消息总数"
+              icon={Bell}
+              gradient="from-blue-500 to-blue-600"
+              shadowColor="shadow-blue-500/20 hover:shadow-blue-500/30"
+              index={0}
+            />
 
-            {/* 已发送卡片 */}
-            <div className="group relative bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-xl shadow-green-500/20 hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Send className="w-6 h-6" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">已发送</p>
-                    <p className="text-3xl font-bold mt-1">{statistics.sentMessages}</p>
-                  </div>
-                </div>
-                <div className="flex items-center text-sm opacity-90">
-                  <CheckCircle2 className="w-4 h-4 mr-1" />
-                  <span>成功发送消息</span>
-                </div>
-              </div>
-            </div>
+            <MessageStatCard
+              title="已发送"
+              value={statistics.sentMessages}
+              description="成功发送消息"
+              icon={Send}
+              gradient="from-green-500 to-green-600"
+              shadowColor="shadow-green-500/20 hover:shadow-green-500/30"
+              index={1}
+            />
 
-            {/* 阅读量卡片 */}
-            <div className="group relative bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl shadow-purple-500/20 hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Eye className="w-6 h-6" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">阅读量</p>
-                    <p className="text-3xl font-bold mt-1">{statistics.totalReadCount}</p>
-                  </div>
-                </div>
-                <div className="flex items-center text-sm opacity-90">
-                  <Eye className="w-4 h-4 mr-1" />
-                  <span>消息阅读次数</span>
-                </div>
-              </div>
-            </div>
+            <MessageStatCard
+              title="阅读量"
+              value={statistics.totalReadCount}
+              description="消息阅读次数"
+              icon={Eye}
+              gradient="from-purple-500 to-purple-600"
+              shadowColor="shadow-purple-500/20 hover:shadow-purple-500/30"
+              index={2}
+              enablePulse={statistics.totalReadCount > 0}
+            />
 
-            {/* 覆盖用户卡片 */}
-            <div className="group relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-xl shadow-orange-500/20 hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-300" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">覆盖用户</p>
-                    <p className="text-3xl font-bold mt-1">{statistics.totalRecipients}</p>
-                  </div>
-                </div>
-                <div className="flex items-center text-sm opacity-90">
-                  <Users className="w-4 h-4 mr-1" />
-                  <span>接收消息用户</span>
-                </div>
-              </div>
-            </div>
+            <MessageStatCard
+              title="覆盖用户"
+              value={statistics.totalRecipients}
+              description="接收消息用户"
+              icon={Users}
+              gradient="from-orange-500 to-orange-600"
+              shadowColor="shadow-orange-500/20 hover:shadow-orange-500/30"
+              index={3}
+            />
           </div>
         )}
 
@@ -322,6 +305,7 @@ export function MessagesViewEnhanced() {
               onClick={() => {
                 loadMessages();
                 loadStatistics();
+                setRefreshTrigger(prev => prev + 1); // 触发刷新动画
               }}
               className="h-11"
             >
@@ -404,121 +388,28 @@ export function MessagesViewEnhanced() {
               const statusConfig = messageStatusConfig[message.status as keyof typeof messageStatusConfig];
               const TypeIcon = typeConfig?.icon || Bell;
               const StatusIcon = statusConfig?.icon || Clock;
-              const readPercentage = message.totalCount ? ((message.readCount || 0) / message.totalCount * 100) : 0;
+              // 如果管理员已查看，进度条显示为 100%
+              const readPercentage = message.isRead === 1 
+                ? 100 
+                : (message.totalCount ? ((message.readCount || 0) / message.totalCount * 100) : 0);
 
               return (
-                <div
+                <MessageListItem
                   key={message.messageId}
-                  className="group bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 overflow-hidden"
-                  style={{
-                    animation: `slideIn 0.3s ease-out ${index * 0.05}s both`
-                  }}
-                >
-                  <div className="p-5">
-                    <div className="flex items-start gap-4">
-                      {/* 左侧图标 */}
-                      <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${typeConfig?.lightColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                        <TypeIcon className={`w-6 h-6 ${typeConfig?.textColor}`} />
-                      </div>
-
-                      {/* 中间内容 */}
-                      <div className="flex-1 min-w-0">
-                        {/* 标题和标签 */}
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-base font-semibold text-gray-900 truncate mb-2">
-                              {message.title}
-                            </h3>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge className={`${typeConfig?.lightColor} ${typeConfig?.textColor} border-0 text-xs`}>
-                                {typeConfig?.label}
-                              </Badge>
-                              <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                                <StatusIcon className={`w-3.5 h-3.5 ${statusConfig?.color.replace('bg-', 'text-')}`} />
-                                <span>{statusConfig?.label}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                <Users className="w-3.5 h-3.5" />
-                                <span>
-                                  {message.recipientType === 'all' ? '全部用户' : 
-                                   message.recipientType === 'specific' ? '指定用户' : '用户组'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* 操作按钮 */}
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewDetail(message)}
-                              className="h-8 px-3 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            >
-                              <Eye className="w-4 h-4 mr-1.5" />
-                              查看
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(message.messageId)}
-                              className="h-8 px-3 hover:bg-red-50 hover:text-red-600 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4 mr-1.5" />
-                              删除
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* 底部信息栏 */}
-                        <div className="flex items-center gap-6 text-sm">
-                          {/* 阅读进度 */}
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <Eye className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                              <div className="flex-1 bg-gray-100 rounded-full h-2 min-w-[80px] max-w-[120px] overflow-hidden">
-                                <div 
-                                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
-                                  style={{ width: `${readPercentage}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-gray-600 whitespace-nowrap">
-                                {message.readCount || 0}/{message.totalCount || 0}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* 创建时间 */}
-                          <div className="flex items-center gap-1.5 text-gray-500 flex-shrink-0">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-xs">{message.createTime}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 底部装饰条 */}
-                  <div className={`h-1 ${typeConfig?.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                </div>
+                  message={message}
+                  index={index}
+                  typeConfig={typeConfig}
+                  statusConfig={statusConfig}
+                  TypeIcon={TypeIcon}
+                  StatusIcon={StatusIcon}
+                  readPercentage={readPercentage}
+                  onViewDetail={handleViewDetail}
+                  onDelete={handleDelete}
+                />
               );
             })
           )}
         </div>
-
-        {/* 添加动画样式 */}
-        <style jsx>{`
-          @keyframes slideIn {
-            from {
-              opacity: 0;
-              transform: translateY(10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}</style>
 
         {/* 分页 */}
         {pagination.total > 0 && (

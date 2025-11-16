@@ -142,9 +142,16 @@ export function MessageDetailModal({ open, onClose, message }: MessageDetailModa
 
             <div>
               <p className="text-sm text-gray-500">阅读情况</p>
-              <p className="text-sm font-medium text-gray-900 mt-1">
-                {message.readCount || 0} / {message.totalCount || 0}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className={`text-sm font-medium ${message.isRead === 1 ? 'text-green-600' : 'text-gray-900'}`}>
+                  {message.isRead === 1 ? '1 / 1' : `${message.readCount || 0} / ${message.totalCount || 0}`}
+                </p>
+                {message.isRead === 1 && (
+                  <Badge className="bg-green-100 text-green-800 text-xs">
+                    已查看
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {message.senderName && (
