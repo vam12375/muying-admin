@@ -1,0 +1,439 @@
+/**
+ * 订单详情视图
+ * Source: 基于旧版本 order/detail.tsx，适配 Next.js
+ */
+
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  ArrowLeft, 
+  Printer, 
+  Download,
+  User,
+  Phone,
+  MapPin,
+  Mail,
+  CreditCard,
+  Clock,
+  Package,
+  Truck
+} from 'lucide-react';
+import { OrderStatusTag } from '@/components/orders/OrderStatusTag';
+import { getOrderDetail } from '@/lib/api/orders';
+import type { Order } from '@/types/order';
+import { formatDate, formatPrice } from '@/lib/utils';
+
+interface OrderDetailViewProps {
+  orderId: string;
+}
+
+export function OrderDetailView({ orderId }: OrderDetailViewProps) {
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchOrderDetail();
+  }, [orderId]);
+
+  const fetchOrderDetail = async () => {
+    setLoading(true);
+    try {
+      const response = await getOrderDetail(orderId);
+      if (response.success && response.data) {
+        setOrder(response.data);
+      }
+    } catch (error) {
+      console.error('获取订单详情失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    window.history.back();
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExport = () => {
+    alert('导出功能待实现');
+  };
+
+  // 获取支付方式文本
+  const getPaymentMethodText = (method?: string) => {
+    const map: Record<string, string> = {
+      'alipay': '支付宝',
+      'wechat': '微信支付',
+      'wallet': '钱包支付',
+      'bank': '银行卡',
+      'balance': '余额支付',
+      'credit_card': '信用卡',
+      'cod': '货到付款'
+    };
+    return map[method || ''] || method || '未支付';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="animate-pulse">
+            <div className="h-8 w-32 bg-gray-200 rounded mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-64 bg-gray-200 rounded"></div>
+              <div className="h-48 bg-gray-200 rounded"></div>
+              <div className="h-48 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="rounded-lg bg-white p-12 text-center shadow-sm border border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">未找到订单信息</h2>
+            <button
+              onClick={handleBack}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              返回订单列表
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="mx-auto max-w-6xl">
+        {/* 页面标题 */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              返回
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900">订单详情</h1>
+          </div>
+          <div className="flex gap-2">
+            {order.status === 'pending_shipment' && (
+              <button
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                <Truck className="h-4 w-4" />
+                发货
+              </button>
+            )}
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 border border-gray-300"
+            >
+              <Printer className="h-4 w-4" />
+              打印
+            </button>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 border border-gray-300"
+            >
+              <Download className="h-4 w-4" />
+              导出
+            </button>
+          </div>
+        </div>
+
+        {/* 订单流程 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 rounded-lg bg-white p-6 shadow-sm border border-gray-200"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                order.status !== 'cancelled' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+              }`}>
+                <Package className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">下单</div>
+                <div className="text-xs text-gray-500">{formatDate(order.createTime, 'datetime')}</div>
+              </div>
+            </div>
+
+            <div className="h-px flex-1 bg-gray-200 mx-4"></div>
+
+            <div className="flex items-center gap-4">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                order.payTime ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+              }`}>
+                <CreditCard className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">支付</div>
+                <div className="text-xs text-gray-500">
+                  {order.payTime ? formatDate(order.payTime, 'datetime') : '-'}
+                </div>
+              </div>
+            </div>
+
+            <div className="h-px flex-1 bg-gray-200 mx-4"></div>
+
+            <div className="flex items-center gap-4">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                order.shippingTime ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+              }`}>
+                <Truck className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">发货</div>
+                <div className="text-xs text-gray-500">
+                  {order.shippingTime ? formatDate(order.shippingTime, 'datetime') : '-'}
+                </div>
+              </div>
+            </div>
+
+            <div className="h-px flex-1 bg-gray-200 mx-4"></div>
+
+            <div className="flex items-center gap-4">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                order.completionTime ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+              }`}>
+                <Package className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-900">完成</div>
+                <div className="text-xs text-gray-500">
+                  {order.completionTime ? formatDate(order.completionTime, 'datetime') : '-'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* 订单信息 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6 rounded-lg bg-white p-6 shadow-sm border border-gray-200"
+        >
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">订单信息</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <div className="text-sm text-gray-500">订单编号</div>
+              <div className="mt-1 text-sm font-medium text-gray-900">{order.orderNo}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">下单时间</div>
+              <div className="mt-1 text-sm font-medium text-gray-900">
+                {formatDate(order.createTime, 'datetime')}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">订单状态</div>
+              <div className="mt-1">
+                <OrderStatusTag status={order.status} />
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">订单金额</div>
+              <div className="mt-1 text-sm font-medium text-gray-900">
+                {formatPrice(order.totalAmount)}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">实付金额</div>
+              <div className="mt-1 text-sm font-semibold text-red-600">
+                {formatPrice(order.actualAmount)}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">支付方式</div>
+              <div className="mt-1 text-sm font-medium text-gray-900">
+                {getPaymentMethodText(order.paymentMethod)}
+              </div>
+            </div>
+            {order.payTime && (
+              <div>
+                <div className="text-sm text-gray-500">支付时间</div>
+                <div className="mt-1 text-sm font-medium text-gray-900">
+                  {formatDate(order.payTime, 'datetime')}
+                </div>
+              </div>
+            )}
+            {order.transactionId && (
+              <div className="md:col-span-2">
+                <div className="text-sm text-gray-500">支付流水号</div>
+                <div className="mt-1 text-sm font-medium text-gray-900">{order.transactionId}</div>
+              </div>
+            )}
+            {order.remark && (
+              <div className="md:col-span-3">
+                <div className="text-sm text-gray-500">订单备注</div>
+                <div className="mt-1 text-sm font-medium text-gray-900">{order.remark}</div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* 收货信息 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6 rounded-lg bg-white p-6 shadow-sm border border-gray-200"
+        >
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">收货信息</h2>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 text-gray-400" />
+              <span className="text-sm text-gray-500">收货人:</span>
+              <span className="text-sm font-medium text-gray-900">{order.receiverName}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 text-gray-400" />
+              <span className="text-sm text-gray-500">联系电话:</span>
+              <span className="text-sm font-medium text-gray-900">{order.receiverPhone}</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+              <span className="text-sm text-gray-500">收货地址:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {order.receiverProvince} {order.receiverCity} {order.receiverDistrict} {order.receiverAddress}
+              </span>
+            </div>
+            {order.receiverZip && (
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-gray-400" />
+                <span className="text-sm text-gray-500">邮编:</span>
+                <span className="text-sm font-medium text-gray-900">{order.receiverZip}</span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* 商品信息 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-6 rounded-lg bg-white p-6 shadow-sm border border-gray-200"
+        >
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">商品信息</h2>
+          {order.products && order.products.length > 0 ? (
+            <div className="space-y-4">
+              {order.products.map((product) => (
+                <div key={product.id} className="flex items-center gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                  <img
+                    src={product.productImage || '/placeholder.png'}
+                    alt={product.productName}
+                    className="h-20 w-20 rounded-lg object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-900">{product.productName}</div>
+                    {product.attributes && (
+                      <div className="mt-1 text-xs text-gray-500">{product.attributes}</div>
+                    )}
+                    <div className="mt-1 text-sm text-gray-600">
+                      {formatPrice(product.price)} × {product.quantity}
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    {formatPrice(product.subtotal)}
+                  </div>
+                </div>
+              ))}
+              
+              {/* 金额汇总 */}
+              <div className="mt-6 space-y-2 border-t border-gray-200 pt-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">商品总价:</span>
+                  <span className="text-gray-900">{formatPrice(order.totalAmount)}</span>
+                </div>
+                {order.shippingFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">运费:</span>
+                    <span className="text-gray-900">{formatPrice(order.shippingFee)}</span>
+                  </div>
+                )}
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">优惠金额:</span>
+                    <span className="text-green-600">-{formatPrice(order.discountAmount)}</span>
+                  </div>
+                )}
+                {order.couponAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">优惠券抵扣:</span>
+                    <span className="text-green-600">-{formatPrice(order.couponAmount)}</span>
+                  </div>
+                )}
+                {order.pointsDiscount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">积分抵扣 ({order.pointsUsed}积分):</span>
+                    <span className="text-green-600">-{formatPrice(order.pointsDiscount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-semibold">
+                  <span className="text-gray-900">实付金额:</span>
+                  <span className="text-red-600">{formatPrice(order.actualAmount)}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-sm text-gray-500">暂无商品数据</div>
+          )}
+        </motion.div>
+
+        {/* 物流信息 */}
+        {(order.status === 'shipped' || order.status === 'completed') && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="rounded-lg bg-white p-6 shadow-sm border border-gray-200"
+          >
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">物流信息</h2>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Truck className="h-5 w-5 text-gray-400" />
+                <span className="text-sm text-gray-500">物流公司:</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {order.shippingCompany || '顺丰速运'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Package className="h-5 w-5 text-gray-400" />
+                <span className="text-sm text-gray-500">物流单号:</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {order.trackingNo || '-'}
+                </span>
+              </div>
+              {order.shippingTime && (
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-gray-400" />
+                  <span className="text-sm text-gray-500">发货时间:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {formatDate(order.shippingTime, 'datetime')}
+                  </span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -51,7 +51,7 @@ export function OverviewView() {
         categoriesResponse
       ] = await Promise.all([
         dashboardApi.getStats(),
-        ordersApi.getList(1, 5),
+        ordersApi.getList({ page: 1, pageSize: 5 }),
         productsApi.getList(1, 5),
         dashboardApi.getMonthlySales(6),
         dashboardApi.getProductCategories(),
