@@ -1,20 +1,20 @@
 /**
- * 积分管理增强版视图组件
- * Points Management Enhanced View Component
+ * 积分管理视图 - 现代卡片式设计
+ * Points Management View - Modern Card Design
  * 
- * 功能：现代化UI、丰富动画、高性能渲染
+ * 功能：卡片式布局、用户头像、GSAP动画
  * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
  */
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { getUserPointsPage, togglePointsStatus, getPointsStatistics } from '@/lib/api/points';
+import { showSuccess, showError } from '@/lib/utils/toast';
 import {
   Search,
   RefreshCw,
@@ -30,54 +30,17 @@ import {
   Sparkles,
   Filter,
   ChevronDown,
-  Star
+  Star,
+  Mail,
+  Phone,
+  Calendar
 } from 'lucide-react';
 import { AdjustPointsModal } from './AdjustPointsModal';
 import { PointsHistoryModal } from './PointsHistoryModal';
 import type { UserPoints, PointsStatistics as PointsStats } from '@/types/points';
+import { useGSAPPointsAnimations } from './hooks/useGSAPPointsAnimations';
 
-const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-  if (typeof window !== 'undefined') {
-    console.log(`[${type.toUpperCase()}]`, message);
-  }
-};
-
-// 动画变体
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 15
-    }
-  }
-};
-
-const cardHoverVariants = {
-  rest: { scale: 1, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
-  hover: {
-    scale: 1.02,
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    transition: {
-      type: 'spring',
-      stiffness: 400,
-      damping: 10
-    }
-  }
-};
+const AVATAR_BASE_URL = 'http://localhost:5173/avatars';
 
 export function PointsViewEnhanced() {
   const [loading, setLoading] = useState(false);
@@ -85,24 +48,49 @@ export function PointsViewEnhanced() {
   const [statistics, setStatistics] = useState<PointsStats | null>(null);
   const [pagination, setPagination] = useState({
     current: 1,
-    size: 10,
+    size: 12,
     total: 0
   });
 
-  // 搜索和筛选
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  // 模态框状态
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedUserPoints, setSelectedUserPoints] = useState<UserPoints | null>(null);
 
+  // 头像加载重试次数记录（userId -> 重试次数）
+  const avatarRetryCount = useRef<Map<number, number>>(new Map());
+
+  const statsCardsRef = useRef<HTMLDivElement>(null);
+  const userCardsRef = useRef<HTMLDivElement>(null);
+  const searchBarRef = useRef<HTMLDivElement>(null);
+
+  const { animateStatsCards, animateUserCards, animateRefresh, animateSearch } = useGSAPPointsAnimations({
+    statsCardsRef,
+    userCardsRef,
+    searchBarRef
+  });
+
   useEffect(() => {
+    // 清空头像重试计数
+    avatarRetryCount.current.clear();
     loadUserPoints();
     loadStatistics();
   }, [pagination.current, statusFilter]);
+
+  useEffect(() => {
+    if (statistics) {
+      animateStatsCards();
+    }
+  }, [statistics]);
+
+  useEffect(() => {
+    if (userPointsList.length > 0) {
+      animateUserCards();
+    }
+  }, [userPointsList]);
 
   const loadUserPoints = async () => {
     setLoading(true);
@@ -123,7 +111,7 @@ export function PointsViewEnhanced() {
         });
       }
     } catch (error: any) {
-      showToast(error.response?.data?.message || '加载用户积分列表失败', 'error');
+      showError(error.response?.data?.message || '加载用户积分列表失败');
     } finally {
       setLoading(false);
     }
@@ -141,20 +129,28 @@ export function PointsViewEnhanced() {
   };
 
   const handleSearch = () => {
+    animateSearch();
     setPagination({ ...pagination, current: 1 });
+    setTimeout(() => loadUserPoints(), 300);
+  };
+
+  const handleRefresh = () => {
+    animateRefresh();
     loadUserPoints();
+    loadStatistics();
   };
 
   const handleToggleStatus = async (userPoints: UserPoints) => {
-    const newStatus = userPoints.status === 1 ? 0 : 1;
+    const currentStatus = userPoints.status ?? userPoints.user?.status ?? 1;
+    const newStatus = currentStatus === 1 ? 0 : 1;
     const action = newStatus === 1 ? '解冻' : '冻结';
 
     try {
       await togglePointsStatus(userPoints.userId, newStatus, `管理员${action}积分账户`);
-      showToast(`${action}成功`, 'success');
+      showSuccess(`${action}成功`);
       loadUserPoints();
     } catch (error: any) {
-      showToast(error.response?.data?.message || `${action}失败`, 'error');
+      showError(error.response?.data?.message || `${action}失败`);
     }
   };
 
@@ -168,412 +164,308 @@ export function PointsViewEnhanced() {
     setHistoryModalOpen(true);
   };
 
-  // 计算统计数据的百分比变化（模拟）
-  const statsWithTrend = useMemo(() => {
-    if (!statistics) return null;
-    return {
-      totalUsers: { value: statistics.totalUsers || 0, trend: '+12.5%', isUp: true },
-      activeUsers: { value: statistics.activeUsers || 0, trend: '+8.3%', isUp: true },
-      totalEarned: { value: statistics.totalEarned || 0, trend: '+15.7%', isUp: true },
-      totalSpent: { value: statistics.totalSpent || 0, trend: '+10.2%', isUp: true }
-    };
-  }, [statistics]);
+  const getUserAvatar = (userPoints: UserPoints) => {
+    const avatar = userPoints.user?.avatar || userPoints.username;
+    if (avatar && avatar.startsWith('http')) {
+      return avatar;
+    }
+    return `${AVATAR_BASE_URL}/${avatar || 'default'}.jpg`;
+  };
+
+  // 处理头像加载失败，限制重试次数为3次
+  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement>, userId: number) => {
+    const currentRetries = avatarRetryCount.current.get(userId) || 0;
+    
+    // 如果重试次数小于3次，尝试加载默认头像
+    if (currentRetries < 3) {
+      avatarRetryCount.current.set(userId, currentRetries + 1);
+      e.currentTarget.src = `${AVATAR_BASE_URL}/default.jpg`;
+    } else {
+      // 超过3次后，不再重试，使用一个占位符或者移除src
+      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e2e8f0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%2394a3b8"%3E?%3C/text%3E%3C/svg%3E';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 p-6">
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="max-w-7xl mx-auto space-y-6"
-      >
-        {/* 页面标题 */}
-        <motion.div variants={itemVariants} className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
-              <Sparkles className="h-8 w-8 text-purple-600" />
-              积分管理
-            </h1>
-            <p className="text-slate-600 mt-1">管理用户积分，查看积分统计和历史记录</p>
-          </div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={() => {
-                loadUserPoints();
-                loadStatistics();
-              }}
-              disabled={loading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              刷新数据
+    <div className="space-y-6">
+      {/* 刷新按钮 */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handleRefresh}
+          disabled={loading}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          刷新数据
+        </Button>
+      </div>
+
+      {/* 统计卡片 - 参考优惠券管理样式 */}
+      <div ref={statsCardsRef} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-3">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">总用户数</p>
+            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.totalUsers || 0}>
+              0
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-3">
+              <Activity className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">活跃用户</p>
+            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.activeUsers || 0}>
+              0
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-3">
+              <Award className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">累计发放</p>
+            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.totalEarned || 0}>
+              0
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+          <CardContent className="p-6">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-3">
+              <TrendingDown className="h-6 w-6 text-white" />
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">累计消费</p>
+            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.totalSpent || 0}>
+              0
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 搜索栏 */}
+      <Card ref={searchBarRef} className="border-0 shadow-lg">
+        <CardContent className="p-4">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Input
+                placeholder="搜索用户名、昵称、邮箱、手机号..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                className="pl-10 h-12"
+              />
+            </div>
+            <Button onClick={handleSearch} disabled={loading} className="h-12 px-6">
+              查询
             </Button>
-          </motion.div>
-        </motion.div>
-
-        {/* 统计卡片 */}
-        {statsWithTrend && (
-          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* 总用户数 */}
-            <motion.div
-              variants={cardHoverVariants}
-              initial="rest"
-              whileHover="hover"
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white shadow-lg"
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="h-12"
             >
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <Users className="h-8 w-8 opacity-80" />
-                  <Badge className="bg-white/20 text-white border-0">
-                    {statsWithTrend.totalUsers.trend}
-                  </Badge>
-                </div>
-                <div className="text-3xl font-bold mb-1">{statsWithTrend.totalUsers.value}</div>
-                <div className="text-blue-100 text-sm">总用户数</div>
-              </div>
-            </motion.div>
+              <Filter className="h-4 w-4 mr-2" />
+              筛选
+              <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
 
-            {/* 活跃用户 */}
-            <motion.div
-              variants={cardHoverVariants}
-              initial="rest"
-              whileHover="hover"
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 text-white shadow-lg"
-            >
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <Activity className="h-8 w-8 opacity-80" />
-                  <Badge className="bg-white/20 text-white border-0">
-                    {statsWithTrend.activeUsers.trend}
-                  </Badge>
-                </div>
-                <div className="text-3xl font-bold mb-1">{statsWithTrend.activeUsers.value}</div>
-                <div className="text-green-100 text-sm">活跃用户</div>
-              </div>
-            </motion.div>
+          {showFilters && (
+            <div className="flex gap-3 mt-3">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              >
+                <option value="all">全部状态</option>
+                <option value="1">正常</option>
+                <option value="0">冻结</option>
+              </select>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-            {/* 累计发放 */}
-            <motion.div
-              variants={cardHoverVariants}
-              initial="rest"
-              whileHover="hover"
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 p-6 text-white shadow-lg"
-            >
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <Award className="h-8 w-8 opacity-80" />
-                  <Badge className="bg-white/20 text-white border-0">
-                    {statsWithTrend.totalEarned.trend}
-                  </Badge>
-                </div>
-                <div className="text-3xl font-bold mb-1">{statsWithTrend.totalEarned.value}</div>
-                <div className="text-purple-100 text-sm">累计发放</div>
-              </div>
-            </motion.div>
-
-            {/* 累计消费 */}
-            <motion.div
-              variants={cardHoverVariants}
-              initial="rest"
-              whileHover="hover"
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 p-6 text-white shadow-lg"
-            >
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-2">
-                  <TrendingUp className="h-8 w-8 opacity-80" />
-                  <Badge className="bg-white/20 text-white border-0">
-                    {statsWithTrend.totalSpent.trend}
-                  </Badge>
-                </div>
-                <div className="text-3xl font-bold mb-1">{statsWithTrend.totalSpent.value}</div>
-                <div className="text-orange-100 text-sm">累计消费</div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* 搜索和筛选区域 */}
-        <motion.div variants={itemVariants}>
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex flex-col gap-4">
-                <div className="flex gap-3">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input
-                      placeholder="搜索用户名、昵称、邮箱、手机号..."
-                      value={keyword}
-                      onChange={(e) => setKeyword(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                      className="pl-10 h-12 border-slate-200 focus:border-purple-500 focus:ring-purple-500"
-                    />
-                  </div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button onClick={handleSearch} disabled={loading} className="h-12 px-8">
-                      查询
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowFilters(!showFilters)}
-                      className="h-12"
-                    >
-                      <Filter className="h-4 w-4 mr-2" />
-                      筛选
-                      <ChevronDown
-                        className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`}
+      {/* 用户卡片网格 */}
+      <div ref={userCardsRef}>
+        {loading ? (
+          <div className="text-center py-20">
+            <RefreshCw className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
+            <p className="text-slate-600">加载中...</p>
+          </div>
+        ) : userPointsList.length === 0 ? (
+          <div className="text-center py-20">
+            <Award className="h-20 w-20 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-600">暂无数据</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {userPointsList.map((userPoints) => (
+              <Card
+                key={userPoints.id || userPoints.pointsId}
+                className="user-card border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group opacity-0"
+              >
+                {/* 顶部渐变条 */}
+                <div className="h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+                
+                <CardContent className="p-6">
+                  {/* 用户头像和基本信息 */}
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="relative">
+                      <img
+                        src={getUserAvatar(userPoints)}
+                        alt={userPoints.username || 'User'}
+                        className="w-16 h-16 rounded-full object-cover ring-4 ring-white shadow-lg"
+                        onError={(e) => handleAvatarError(e, userPoints.userId)}
                       />
-                    </Button>
-                  </motion.div>
-                </div>
+                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${
+                        (userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? 'bg-green-500' : 'bg-red-500'
+                      }`} />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-lg truncate">
+                        {userPoints.username || userPoints.user?.username || `用户${userPoints.userId}`}
+                      </h3>
+                      {(userPoints.nickname || userPoints.user?.nickname) && (
+                        <p className="text-sm text-slate-500 truncate">
+                          {userPoints.nickname || userPoints.user?.nickname}
+                        </p>
+                      )}
+                      <Badge
+                        variant={(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? 'default' : 'destructive'}
+                        className="mt-2"
+                      >
+                        {(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? '正常' : '禁用'}
+                      </Badge>
+                    </div>
+                  </div>
 
-                <AnimatePresence>
-                  {showFilters && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="flex gap-3 pt-2">
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => setStatusFilter(e.target.value)}
-                          className="h-10 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                          <option value="all">全部状态</option>
-                          <option value="1">正常</option>
-                          <option value="0">冻结</option>
-                        </select>
+                  {/* 联系信息 */}
+                  <div className="space-y-2 mb-6 text-sm">
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Mail className="h-4 w-4" />
+                      <span className="truncate">{(userPoints.email || userPoints.user?.email) || '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Phone className="h-4 w-4" />
+                      <span>{(userPoints.phone || userPoints.user?.phone) || '-'}</span>
+                    </div>
+                  </div>
+
+                  {/* 积分统计 */}
+                  <div className="grid grid-cols-3 gap-3 mb-6">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <Star className="h-5 w-5 text-blue-600 mx-auto mb-1" />
+                      <div className="text-xl font-bold text-blue-700">
+                        {userPoints.currentPoints || userPoints.points || 0}
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* 用户积分卡片列表 */}
-        <motion.div variants={itemVariants}>
-          <AnimatePresence mode="wait">
-            {loading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12"
-              >
-                <RefreshCw className="h-12 w-12 animate-spin text-purple-600 mx-auto mb-4" />
-                <p className="text-slate-600">加载中...</p>
-              </motion.div>
-            ) : userPointsList.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="text-center py-12"
-              >
-                <Award className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600">暂无数据</p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="list"
-                variants={containerVariants}
-                className="grid grid-cols-1 gap-4"
-              >
-                {userPointsList.map((userPoints, index) => (
-                  <motion.div
-                    key={userPoints.pointsId}
-                    variants={itemVariants}
-                    custom={index}
-                    whileHover={{ scale: 1.01 }}
-                    className="group"
-                  >
-                    <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white/90 backdrop-blur-sm overflow-hidden">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500" />
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          {/* 左侧：用户信息 */}
-                          <div className="flex-1 space-y-4">
-                            <div className="flex items-center gap-3">
-                              <motion.div
-                                whileHover={{ rotate: 360 }}
-                                transition={{ duration: 0.5 }}
-                                className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg"
-                              >
-                                {userPoints.username?.charAt(0).toUpperCase()}
-                              </motion.div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-lg">{userPoints.username}</span>
-                                  {userPoints.nickname && (
-                                    <span className="text-slate-500">({userPoints.nickname})</span>
-                                  )}
-                                  <Badge
-                                    variant={userPoints.status === 1 ? 'default' : 'destructive'}
-                                    className="ml-2"
-                                  >
-                                    {userPoints.status === 1 ? '正常' : '冻结'}
-                                  </Badge>
-                                </div>
-                                <div className="flex items-center gap-4 mt-1 text-sm text-slate-600">
-                                  <span>ID: {userPoints.userId}</span>
-                                  {userPoints.email && <span>📧 {userPoints.email}</span>}
-                                  {userPoints.phone && <span>📱 {userPoints.phone}</span>}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* 积分统计 */}
-                            <div className="grid grid-cols-3 gap-4">
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200"
-                              >
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Star className="h-5 w-5 text-blue-600" />
-                                  <span className="text-xs text-blue-600 font-medium">当前积分</span>
-                                </div>
-                                <div className="text-2xl font-bold text-blue-700">
-                                  {userPoints.currentPoints}
-                                </div>
-                              </motion.div>
-
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-4 border border-green-200"
-                              >
-                                <div className="flex items-center gap-2 mb-2">
-                                  <TrendingUp className="h-5 w-5 text-green-600" />
-                                  <span className="text-xs text-green-600 font-medium">累计获得</span>
-                                </div>
-                                <div className="text-2xl font-bold text-green-700">
-                                  {userPoints.totalEarned}
-                                </div>
-                              </motion.div>
-
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                className="bg-gradient-to-br from-orange-50 to-red-100 rounded-xl p-4 border border-orange-200"
-                              >
-                                <div className="flex items-center gap-2 mb-2">
-                                  <TrendingDown className="h-5 w-5 text-orange-600" />
-                                  <span className="text-xs text-orange-600 font-medium">累计消费</span>
-                                </div>
-                                <div className="text-2xl font-bold text-orange-700">
-                                  {userPoints.totalSpent}
-                                </div>
-                              </motion.div>
-                            </div>
-                          </div>
-
-                          {/* 右侧：操作按钮 */}
-                          <div className="flex flex-col gap-2 ml-6">
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleAdjustPoints(userPoints)}
-                                className="w-full justify-start hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300"
-                              >
-                                <Settings className="h-4 w-4 mr-2" />
-                                调整积分
-                              </Button>
-                            </motion.div>
-
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleViewHistory(userPoints)}
-                                className="w-full justify-start hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
-                              >
-                                <History className="h-4 w-4 mr-2" />
-                                交易历史
-                              </Button>
-                            </motion.div>
-
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                              <Button
-                                size="sm"
-                                variant={userPoints.status === 1 ? 'destructive' : 'default'}
-                                onClick={() => handleToggleStatus(userPoints)}
-                                className="w-full justify-start"
-                              >
-                                {userPoints.status === 1 ? (
-                                  <>
-                                    <Lock className="h-4 w-4 mr-2" />
-                                    冻结账户
-                                  </>
-                                ) : (
-                                  <>
-                                    <Unlock className="h-4 w-4 mr-2" />
-                                    解冻账户
-                                  </>
-                                )}
-                              </Button>
-                            </motion.div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* 分页 */}
-        {userPointsList.length > 0 && (
-          <motion.div variants={itemVariants}>
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-slate-600">
-                    共 <span className="font-semibold text-purple-600">{pagination.total}</span> 条记录
+                      <div className="text-xs text-blue-600">当前</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                      <div className="text-xl font-bold text-green-700">
+                        {userPoints.totalEarned || 0}
+                      </div>
+                      <div className="text-xs text-green-600">获得</div>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg">
+                      <TrendingDown className="h-5 w-5 text-orange-600 mx-auto mb-1" />
+                      <div className="text-xl font-bold text-orange-700">
+                        {userPoints.totalSpent || userPoints.totalUsed || 0}
+                      </div>
+                      <div className="text-xs text-orange-600">消费</div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPagination({ ...pagination, current: pagination.current - 1 })}
-                        disabled={pagination.current === 1 || loading}
-                      >
-                        上一页
-                      </Button>
-                    </motion.div>
-                    <span className="text-sm px-4">
-                      {pagination.current} / {Math.ceil(pagination.total / pagination.size) || 1}
-                    </span>
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPagination({ ...pagination, current: pagination.current + 1 })}
-                        disabled={pagination.current >= Math.ceil(pagination.total / pagination.size) || loading}
-                      >
-                        下一页
-                      </Button>
-                    </motion.div>
+
+                  {/* 操作按钮 */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleAdjustPoints(userPoints)}
+                      className="w-full"
+                    >
+                      <Settings className="h-4 w-4 mr-1" />
+                      调整
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleViewHistory(userPoints)}
+                      className="w-full"
+                    >
+                      <History className="h-4 w-4 mr-1" />
+                      历史
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? 'destructive' : 'default'}
+                      onClick={() => handleToggleStatus(userPoints)}
+                      className="w-full col-span-2"
+                    >
+                      {(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? (
+                        <>
+                          <Lock className="h-4 w-4 mr-1" />
+                          冻结
+                        </>
+                      ) : (
+                        <>
+                          <Unlock className="h-4 w-4 mr-1" />
+                          解冻
+                        </>
+                      )}
+                    </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
-      </motion.div>
+      </div>
+
+      {/* 分页 */}
+      {userPointsList.length > 0 && (
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-slate-600">
+                共 <span className="font-bold text-purple-600">{pagination.total}</span> 条记录
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination({ ...pagination, current: pagination.current - 1 })}
+                  disabled={pagination.current === 1 || loading}
+                >
+                  上一页
+                </Button>
+                <span className="text-sm px-4">
+                  {pagination.current} / {Math.ceil(pagination.total / pagination.size) || 1}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination({ ...pagination, current: pagination.current + 1 })}
+                  disabled={pagination.current >= Math.ceil(pagination.total / pagination.size) || loading}
+                >
+                  下一页
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 模态框 */}
       <AdjustPointsModal

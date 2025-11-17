@@ -69,27 +69,42 @@ export function PointsHistoryModal({ open, onClose, userPoints }: PointsHistoryM
     }
   };
 
-  const getTypeLabel = (type: number) => {
-    const types: Record<number, string> = {
+  // 获取类型标签（支持字符串和数字类型）
+  const getTypeLabel = (type: string | number) => {
+    if (typeof type === 'string') {
+      const stringTypes: Record<string, string> = {
+        'earn': '获得',
+        'spend': '消费',
+        'decrease': '减少',
+        'expire': '过期',
+        'admin': '管理员调整'
+      };
+      return stringTypes[type.toLowerCase()] || type;
+    }
+    
+    const numberTypes: Record<number, string> = {
       1: '获得',
       2: '消费',
       3: '过期',
       4: '管理员调整'
     };
-    return types[type] || '未知';
+    return numberTypes[type] || '未知';
   };
 
-  const getTypeVariant = (type: number): 'default' | 'secondary' | 'destructive' | 'outline' => {
-    const variants: Record<number, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      1: 'default',
-      2: 'secondary',
-      3: 'destructive',
-      4: 'outline'
-    };
-    return variants[type] || 'default';
+  const getTypeVariant = (type: string | number): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    const typeStr = typeof type === 'string' ? type.toLowerCase() : String(type);
+    
+    if (typeStr === 'earn' || typeStr === '1') return 'default';
+    if (typeStr === 'spend' || typeStr === 'decrease' || typeStr === '2') return 'secondary';
+    if (typeStr === 'expire' || typeStr === '3') return 'destructive';
+    if (typeStr === 'admin' || typeStr === '4') return 'outline';
+    
+    return 'default';
   };
 
-  const getStatusLabel = (status: number) => {
+  const getStatusLabel = (status?: number) => {
+    if (status === undefined) return '成功';
+    
     const statuses: Record<number, string> = {
       0: '失败',
       1: '成功',
@@ -98,13 +113,51 @@ export function PointsHistoryModal({ open, onClose, userPoints }: PointsHistoryM
     return statuses[status] || '未知';
   };
 
-  const getStatusVariant = (status: number): 'default' | 'secondary' | 'destructive' => {
+  const getStatusVariant = (status?: number): 'default' | 'secondary' | 'destructive' => {
+    if (status === undefined) return 'default';
+    
     const variants: Record<number, 'default' | 'secondary' | 'destructive'> = {
       0: 'destructive',
       1: 'default',
       2: 'secondary'
     };
     return variants[status] || 'default';
+  };
+
+  // 获取积分来源的中文显示
+  const getSourceLabel = (source?: string) => {
+    if (!source) return '-';
+    
+    const sourceMap: Record<string, string> = {
+      // 基础来源
+      'signin': '签到',
+      'sign_in': '签到',
+      'order': '订单',
+      'order_completed': '订单完成',
+      'order_complete': '订单完成',
+      'review': '评论',
+      'comment': '评论',
+      'comment_reward': '评论奖励',
+      'register': '注册',
+      'exchange': '积分兑换',
+      'exchange_cancel': '取消兑换',
+      'admin': '管理员操作',
+      'admin_adjustment': '管理员调整',
+      'activity': '活动',
+      'event': '活动',
+      'event_reward': '活动奖励',
+      'refund': '退款',
+      'system': '系统',
+      // 其他可能的来源
+      'purchase': '购买',
+      'invite': '邀请',
+      'share': '分享',
+      'checkin': '签到',
+      'task': '任务',
+      'gift': '赠送'
+    };
+    
+    return sourceMap[source.toLowerCase()] || source;
   };
 
   if (!open || !userPoints) return null;
@@ -143,34 +196,32 @@ export function PointsHistoryModal({ open, onClose, userPoints }: PointsHistoryM
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>交易流水号</TableHead>
+                <TableHead>交易ID</TableHead>
                 <TableHead>类型</TableHead>
                 <TableHead>积分变动</TableHead>
-                <TableHead>交易前</TableHead>
-                <TableHead>交易后</TableHead>
-                <TableHead>状态</TableHead>
                 <TableHead>来源</TableHead>
                 <TableHead>说明</TableHead>
+                <TableHead>关联ID</TableHead>
                 <TableHead>时间</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     加载中...
                   </TableCell>
                 </TableRow>
               ) : transactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     暂无交易记录
                   </TableCell>
                 </TableRow>
               ) : (
                 transactions.map((transaction) => (
-                  <TableRow key={transaction.transactionId}>
-                    <TableCell className="font-mono text-xs">{transaction.transactionNo}</TableCell>
+                  <TableRow key={transaction.id || transaction.transactionId}>
+                    <TableCell className="font-mono text-sm">#{transaction.id}</TableCell>
                     <TableCell>
                       <Badge variant={getTypeVariant(transaction.type)}>
                         {getTypeLabel(transaction.type)}
@@ -191,16 +242,14 @@ export function PointsHistoryModal({ open, onClose, userPoints }: PointsHistoryM
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{transaction.beforePoints}</TableCell>
-                    <TableCell>{transaction.afterPoints}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusVariant(transaction.status)}>
-                        {getStatusLabel(transaction.status)}
-                      </Badge>
+                      <span className="text-sm">{getSourceLabel(transaction.source)}</span>
                     </TableCell>
-                    <TableCell>{transaction.source || '-'}</TableCell>
                     <TableCell className="max-w-[200px] truncate" title={transaction.description}>
                       {transaction.description || '-'}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {transaction.referenceId || '-'}
                     </TableCell>
                     <TableCell className="text-xs text-gray-500">
                       {new Date(transaction.createTime).toLocaleString('zh-CN')}

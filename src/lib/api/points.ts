@@ -13,16 +13,50 @@ import type {
   PointsListParams,
   PointsTransactionListParams,
   AdjustPointsRequest,
-  PointsStatistics
+  PointsStatistics,
+  PointsRule,
+  PointsRuleListParams,
+  PointsProduct,
+  PointsProductListParams,
+  PointsExchange,
+  PointsExchangeListParams,
+  PointsOperationLog,
+  PointsOperationLogListParams,
+  ShipExchangeRequest
 } from '@/types/points';
 import type { PageResult } from '@/types/common';
 
 export const pointsApi = {
+  // ==================== 用户积分管理 ====================
+  
   /**
    * 分页获取用户积分列表
+   * 注意：后端返回的数据需要映射字段
    */
   getUserPointsPage: async (params: PointsListParams) => {
     const response = await fetchApi<PageResult<UserPoints>>('/admin/points/user/list', { params });
+    
+    // 映射后端数据到前端格式
+    if (response.data && response.data.records) {
+      response.data.records = response.data.records.map((item: any) => ({
+        ...item,
+        // 映射兼容字段
+        pointsId: item.id,
+        currentPoints: item.points,
+        // 保留原始统计字段
+        totalEarned: item.totalEarned || 0,
+        totalUsed: item.totalUsed || 0,
+        totalSpent: item.totalUsed || 0, // 兼容字段
+        availablePoints: item.availablePoints || item.points || 0,
+        // 映射用户信息
+        username: item.user?.username || item.username,
+        nickname: item.user?.nickname || item.nickname,
+        email: item.user?.email || item.email,
+        phone: item.user?.phone || item.phone,
+        status: item.user?.status !== undefined ? item.user.status : 1 // 默认为正常状态
+      }));
+    }
+    
     return response.data;
   },
 
@@ -64,9 +98,23 @@ export const pointsApi = {
 
   /**
    * 分页获取积分交易记录列表（积分历史）
+   * 注意：后端返回的是PointsHistory，需要映射字段
    */
   getPointsTransactionPage: async (params: PointsTransactionListParams) => {
     const response = await fetchApi<PageResult<PointsTransaction>>('/admin/points/history/list', { params });
+    
+    // 映射后端数据到前端格式
+    if (response.data && response.data.records) {
+      response.data.records = response.data.records.map((item: any) => ({
+        ...item,
+        // 映射兼容字段
+        transactionId: item.id,
+        transactionNo: `TXN${String(item.id).padStart(10, '0')}`, // 生成交易流水号
+        status: 1, // 默认为成功状态
+        relatedOrderId: item.referenceId ? parseInt(item.referenceId) : undefined
+      }));
+    }
+    
     return response.data;
   },
 
@@ -84,6 +132,150 @@ export const pointsApi = {
   getPointsStatistics: async () => {
     const response = await fetchApi<PointsStatistics>('/admin/points/stats');
     return response.data;
+  },
+
+  // ==================== 积分规则管理 ====================
+
+  /**
+   * 分页获取积分规则列表
+   */
+  getPointsRulePage: async (params: PointsRuleListParams) => {
+    const response = await fetchApi<PageResult<PointsRule>>('/admin/points/rule/list', { params });
+    return response.data;
+  },
+
+  /**
+   * 创建积分规则
+   */
+  createPointsRule: async (data: Partial<PointsRule>) => {
+    const response = await fetchApi<PointsRule>('/admin/points/rule', {
+      method: 'POST',
+      data
+    });
+    return response.data;
+  },
+
+  /**
+   * 更新积分规则
+   */
+  updatePointsRule: async (id: number, data: Partial<PointsRule>) => {
+    const response = await fetchApi<void>(`/admin/points/rule/${id}`, {
+      method: 'PUT',
+      data
+    });
+    return response.data;
+  },
+
+  /**
+   * 删除积分规则
+   */
+  deletePointsRule: async (id: number) => {
+    const response = await fetchApi<void>(`/admin/points/rule/${id}`, {
+      method: 'DELETE'
+    });
+    return response.data;
+  },
+
+  // ==================== 积分商品管理 ====================
+
+  /**
+   * 分页获取积分商品列表
+   */
+  getPointsProductPage: async (params: PointsProductListParams) => {
+    const response = await fetchApi<PageResult<PointsProduct>>('/admin/points/product/list', { params });
+    return response.data;
+  },
+
+  /**
+   * 创建积分商品
+   */
+  createPointsProduct: async (data: Partial<PointsProduct>) => {
+    const response = await fetchApi<PointsProduct>('/admin/points/product', {
+      method: 'POST',
+      data
+    });
+    return response.data;
+  },
+
+  /**
+   * 更新积分商品
+   */
+  updatePointsProduct: async (id: number, data: Partial<PointsProduct>) => {
+    const response = await fetchApi<void>(`/admin/points/product/${id}`, {
+      method: 'PUT',
+      data
+    });
+    return response.data;
+  },
+
+  /**
+   * 删除积分商品
+   */
+  deletePointsProduct: async (id: number) => {
+    const response = await fetchApi<void>(`/admin/points/product/${id}`, {
+      method: 'DELETE'
+    });
+    return response.data;
+  },
+
+  // ==================== 积分兑换管理 ====================
+
+  /**
+   * 分页获取积分兑换记录列表
+   */
+  getPointsExchangePage: async (params: PointsExchangeListParams) => {
+    const response = await fetchApi<PageResult<PointsExchange>>('/admin/points/exchange/list', { params });
+    return response.data;
+  },
+
+  /**
+   * 获取积分兑换详情
+   */
+  getPointsExchange: async (id: number) => {
+    const response = await fetchApi<PointsExchange>(`/admin/points/exchange/${id}`);
+    return response.data;
+  },
+
+  /**
+   * 更新积分兑换状态
+   */
+  updateExchangeStatus: async (id: number, status: string) => {
+    const response = await fetchApi<void>(`/admin/points/exchange/${id}/status`, {
+      method: 'PUT',
+      params: { status }
+    });
+    return response.data;
+  },
+
+  /**
+   * 积分兑换发货
+   */
+  shipExchange: async (id: number, data: ShipExchangeRequest) => {
+    const response = await fetchApi<void>(`/admin/points/exchange/${id}/ship`, {
+      method: 'POST',
+      data
+    });
+    return response.data;
+  },
+
+  /**
+   * 获取积分兑换统计数据
+   */
+  getExchangeStats: async (startDate?: string, endDate?: string) => {
+    const response = await fetchApi<Record<string, any>>('/admin/points/exchange/stats', {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  },
+
+  // ==================== 积分操作日志 ====================
+
+  /**
+   * 分页获取积分操作日志列表
+   */
+  getPointsOperationLogPage: async (params: PointsOperationLogListParams) => {
+    const response = await fetchApi<PageResult<PointsOperationLog>>('/admin/points/operation/list', { params });
+    return response.data;
   }
 };
 
@@ -95,5 +287,19 @@ export const {
   togglePointsStatus,
   getPointsTransactionPage,
   getPointsTransaction,
-  getPointsStatistics
+  getPointsStatistics,
+  getPointsRulePage,
+  createPointsRule,
+  updatePointsRule,
+  deletePointsRule,
+  getPointsProductPage,
+  createPointsProduct,
+  updatePointsProduct,
+  deletePointsProduct,
+  getPointsExchangePage,
+  getPointsExchange,
+  updateExchangeStatus,
+  shipExchange,
+  getExchangeStats,
+  getPointsOperationLogPage
 } = pointsApi;
