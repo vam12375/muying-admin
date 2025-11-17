@@ -6,8 +6,8 @@
  */
 
 import { useState } from 'react'
-import { usersApi } from '@/lib/api/users'
-import type { UserAccount } from '@/types/user'
+import { accountsApi } from '@/lib/api/accounts'
+import type { UserAccount } from '@/types/accounts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -36,10 +36,9 @@ export function RechargeModal({ open, onClose, user, onSuccess }: RechargeModalP
     description: '',
     remark: ''
   })
+  const [error, setError] = useState<string>('')
 
   if (!open) return null
-
-  const [error, setError] = useState<string>('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,7 +52,7 @@ export function RechargeModal({ open, onClose, user, onSuccess }: RechargeModalP
 
     try {
       setLoading(true)
-      await usersApi.recharge({
+      await accountsApi.rechargeUserAccount({
         userId: user.userId,
         amount,
         paymentMethod: formData.paymentMethod,

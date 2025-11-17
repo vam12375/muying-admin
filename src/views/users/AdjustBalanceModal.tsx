@@ -6,8 +6,8 @@
  */
 
 import { useState } from 'react'
-import { usersApi } from '@/lib/api/users'
-import type { UserAccount } from '@/types/user'
+import { accountsApi } from '@/lib/api/accounts'
+import type { UserAccount } from '@/types/accounts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,10 +28,9 @@ export function AdjustBalanceModal({ open, onClose, user, onSuccess }: AdjustBal
     amount: '',
     reason: ''
   })
+  const [error, setError] = useState<string>('')
 
   if (!open) return null
-
-  const [error, setError] = useState<string>('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,7 +56,11 @@ export function AdjustBalanceModal({ open, onClose, user, onSuccess }: AdjustBal
     try {
       setLoading(true)
       const finalAmount = adjustType === 'increase' ? amount : -amount
-      await usersApi.adjustBalance(user.userId, finalAmount, formData.reason)
+      await accountsApi.adjustUserBalance({
+        userId: user.userId,
+        amount: finalAmount,
+        reason: formData.reason
+      })
       
       onSuccess()
       onClose()
