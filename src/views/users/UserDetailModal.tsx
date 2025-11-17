@@ -14,7 +14,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, User, Mail, Phone, Calendar, Wallet, Edit2, Save, XCircle } from 'lucide-react';
+import { X, User as UserIcon, Mail, Phone, Calendar, Wallet, Edit2, Save, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +22,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { usersApi } from '@/lib/api/users';
-import type { UserAccount } from '@/types/user';
+import { accountsApi } from '@/lib/api/accounts';
+import type { User } from '@/types/user';
+import type { UserAccount } from '@/types/accounts';
 import { RechargeModal } from './RechargeModal';
 import { AdjustBalanceModal } from './AdjustBalanceModal';
 import { TransactionHistoryModal } from './TransactionHistoryModal';
@@ -37,6 +39,7 @@ interface UserDetailModalProps {
 export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetailModalProps) {
   console.log('[UserDetailModal] 渲染:', { userId, isOpen });
   
+  const [user, setUser] = useState<User | null>(null);
   const [userAccount, setUserAccount] = useState<UserAccount | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -60,19 +63,32 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
   const loadUserDetail = async () => {
     try {
       setLoading(true);
-      const response = await usersApi.getUserAccount(userId);
-      const data = response.data;
       
-      if (!data) {
+      // 1. 获取用户基本信息 - 使用 /admin/users/{id}
+      const userResponse = await usersApi.getUserById(userId);
+      const userData = userResponse.data;
+      
+      if (!userData) {
         throw new Error('用户数据为空');
       }
       
-      setUserAccount(data);
+      setUser(userData);
       setEditForm({
-        nickname: data.nickname || '',
-        email: data.email || '',
-        phone: data.phone || '',
+        nickname: userData.nickname || '',
+        email: userData.email || '',
+        phone: userData.phone || '',
       });
+      
+      // 2. 获取用户账户信息
+      try {
+        const accountResponse = await accountsApi.getUserAccountByUserId(userId);
+        if (accountResponse.data) {
+          setUserAccount(accountResponse.data);
+        }
+      } catch (accountError) {
+        console.error('获取账户信息失败:', accountError);
+        // 账户信息获取失败不影响用户基本信息显示
+      }
     } catch (error: any) {
       toast({
         title: '加载失败',
@@ -81,15 +97,15 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
       });
     } finally {
       setLoading(false);
-   
+    }
+  };
 
   const handleSaveEdit = async () => {
-    if (!userAccount) return;
+    if (!user) return;
 
     try {
       setLoading(true);
-      // TODO: 调用更新用户信息的API
-      // await usersApi.updateUser(userId, editForm);
+      await usersApi.updateUser(userId, editForm);
       
       toast({
         title: '保存成功',
@@ -111,18 +127,18 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
   };
 
   const handleToggleStatus = async () => {
-    if (!userAccount) return;
+    if (!user) return;
 
-    const newStatus = userAccount.status === 1 ? 0 : 1;
-    const statusText = newStatus === 1 ? '启用' : '冻结';
+    const newStatus = user.status === 1 ? 0 : 1;
+    const statusText = newStatus === 1 ? '启用' : '禁用';
 
     try {
       setLoading(true);
-      await usersApi.toggleStatus(userId, newStatus, `管理�?{statusText}账户`);
+      await usersApi.toggleUserStatus(userId, newStatus);
       
       toast({
         title: '操作成功',
-        description: `账户�?{statusText}`,
+        description: `用户已${statusText}`,
       });
       
       loadUserDetail();
@@ -130,7 +146,7 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
     } catch (error: any) {
       toast({
         title: '操作失败',
-        description: error.message || `${statusText}账户失败`,
+        description: error.message || `${statusText}用户失败`,
         variant: 'destructive',
       });
     } finally {
@@ -148,11 +164,11 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
           <div className="flex items-center justify-between p-6 border-b">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                {userAccount?.username?.charAt(0).toUpperCase() || 'U'}
+                {user?.username?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  {userAccount?.username || '加载中..'}
+                  {user?.username || '加载中...'}
                 </h2>
                 <p className="text-sm text-gray-500">
                   用户ID: {userId}
@@ -171,14 +187,14 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {loading && !userAccount ? (
+            {loading && !user ? (
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
                   <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-500">加载中..</p>
+                  <p className="text-gray-500">加载中...</p>
                 </div>
               </div>
-            ) : userAccount ? (
+            ) : user ? (
               <Tabs defaultValue="basic" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="basic">基本信息</TabsTrigger>
@@ -208,9 +224,9 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
                           onClick={() => {
                             setIsEditing(false);
                             setEditForm({
-                              nickname: userAccount.nickname || '',
-                              email: userAccount.email || '',
-                              phone: userAccount.phone || '',
+                              nickname: user.nickname || '',
+                              email: user.email || '',
+                              phone: user.phone || '',
                             });
                           }}
                           className="gap-2"
@@ -234,11 +250,11 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-gray-700">
-                        <User className="w-4 h-4" />
+                        <UserIcon className="w-4 h-4" />
                         用户名
                       </Label>
                       <Input
-                        value={userAccount.username}
+                        value={user.username}
                         disabled
                         className="bg-gray-50"
                       />
@@ -246,11 +262,11 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
 
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-gray-700">
-                        <User className="w-4 h-4" />
+                        <UserIcon className="w-4 h-4" />
                         昵称
                       </Label>
                       <Input
-                        value={isEditing ? editForm.nickname : userAccount.nickname || '-'}
+                        value={isEditing ? editForm.nickname : user.nickname || '-'}
                         onChange={(e) => setEditForm({ ...editForm, nickname: e.target.value })}
                         disabled={!isEditing}
                         className={isEditing ? '' : 'bg-gray-50'}
@@ -263,7 +279,7 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
                         邮箱
                       </Label>
                       <Input
-                        value={isEditing ? editForm.email : userAccount.email || '-'}
+                        value={isEditing ? editForm.email : user.email || '-'}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                         disabled={!isEditing}
                         className={isEditing ? '' : 'bg-gray-50'}
@@ -276,7 +292,7 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
                         手机号
                       </Label>
                       <Input
-                        value={isEditing ? editForm.phone : userAccount.phone || '-'}
+                        value={isEditing ? editForm.phone : user.phone || '-'}
                         onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                         disabled={!isEditing}
                         className={isEditing ? '' : 'bg-gray-50'}
@@ -289,17 +305,17 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
                         注册时间
                       </Label>
                       <Input
-                        value={userAccount.createTime || '-'}
+                        value={user.createTime || '-'}
                         disabled
                         className="bg-gray-50"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-gray-700">账户状态</Label>
+                      <Label className="text-gray-700">用户状态</Label>
                       <div>
-                        <Badge variant={userAccount.status === 1 ? 'default' : 'destructive'}>
-                          {userAccount.status === 1 ? '正常' : '冻结'}
+                        <Badge variant={user.status === 1 ? 'default' : 'destructive'}>
+                          {user.status === 1 ? '正常' : '禁用'}
                         </Badge>
                       </div>
                     </div>
@@ -310,58 +326,66 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
                 <TabsContent value="account" className="space-y-6 mt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">账户详情</h3>
                   
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
-                          <Wallet className="w-5 h-5 text-white" />
+                  {userAccount ? (
+                    <>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                              <Wallet className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-sm text-gray-600">当前余额</span>
+                          </div>
+                          <p className="text-2xl font-bold text-green-600">
+                            ¥{userAccount.balance?.toFixed(2) || '0.00'}
+                          </p>
                         </div>
-                        <span className="text-sm text-gray-600">当前余额</span>
-                      </div>
-                      <p className="text-2xl font-bold text-green-600">
-                        ¥{userAccount.balance?.toFixed(2) || '0.00'}
-                      </p>
-                    </div>
 
-                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                          <Wallet className="w-5 h-5 text-white" />
+                        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                              <Wallet className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-sm text-gray-600">累计充值</span>
+                          </div>
+                          <p className="text-2xl font-bold text-blue-600">
+                            ¥{userAccount.totalRecharge?.toFixed(2) || '0.00'}
+                          </p>
                         </div>
-                        <span className="text-sm text-gray-600">累计充值</span>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-600">
-                        ¥{userAccount.totalRecharge?.toFixed(2) || '0.00'}
-                      </p>
-                    </div>
 
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
-                          <Wallet className="w-5 h-5 text-white" />
+                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
+                              <Wallet className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-sm text-gray-600">累计消费</span>
+                          </div>
+                          <p className="text-2xl font-bold text-purple-600">
+                            ¥{userAccount.totalConsumption?.toFixed(2) || '0.00'}
+                          </p>
                         </div>
-                        <span className="text-sm text-gray-600">累计消费</span>
                       </div>
-                      <p className="text-2xl font-bold text-purple-600">
-                        ¥{userAccount.totalConsumption?.toFixed(2) || '0.00'}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">账户ID</span>
-                      <span className="font-medium">{userAccount.accountId}</span>
+                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">账户ID</span>
+                          <span className="font-medium">{userAccount.accountId}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">创建时间</span>
+                          <span className="font-medium">{userAccount.createTime || '-'}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">更新时间</span>
+                          <span className="font-medium">{userAccount.updateTime || '-'}</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      暂无账户信息
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">创建时间</span>
-                      <span className="font-medium">{userAccount.createTime || '-'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">更新时间</span>
-                      <span className="font-medium">{userAccount.updateTime || '-'}</span>
-                    </div>
-                  </div>
+                  )}
                 </TabsContent>
 
                 {/* 操作 */}
@@ -400,9 +424,9 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
                       onClick={handleToggleStatus}
                       disabled={loading}
                       className="h-20 text-lg gap-3"
-                      variant={userAccount?.status === 1 ? 'destructive' : 'default'}
+                      variant={user?.status === 1 ? 'destructive' : 'default'}
                     >
-                      {userAccount?.status === 1 ? '冻结账户' : '启用账户'}
+                      {user?.status === 1 ? '禁用用户' : '启用用户'}
                     </Button>
                   </div>
                 </TabsContent>
@@ -452,5 +476,4 @@ export function UserDetailModal({ userId, isOpen, onClose, onUpdate }: UserDetai
     </>
   );
 }
-  }
-}
+

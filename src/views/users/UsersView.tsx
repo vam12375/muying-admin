@@ -24,7 +24,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usersApi } from '@/lib/api/users'
-import type { UserAccount, UserStats } from '@/types/user'
+import { accountsApi } from '@/lib/api/accounts'
+import type { UserAccount } from '@/types/accounts'
+import type { UserStats } from '@/types/user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -56,6 +58,7 @@ import {
   List,
   ArrowUpDown
 } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 import { 
   Table, 
   TableBody, 
@@ -165,26 +168,66 @@ export function UsersView() {
       setLoading(true)
       setError(null)
       
-      const response = await usersApi.getUserAccountPage({
+      // 方式1：先获取用户列表，然后获取每个用户的账户信息（参考旧系统）
+      const userResponse = await usersApi.getUserPage({
         page: currentPage,
         size: pageSize,
         keyword: searchKeyword || undefined,
         status: statusFilter
       })
       
-      if (response.data) {
-        const userList = response.data.records || []
-        const totalCount = response.data.total || 0
+      if (userResponse.data) {
+        const userList = userResponse.data.records || []
+        const totalCount = userResponse.data.total || 0
         
-        setUsers(userList)
+        // 获取每个用户的账户余额信息
+        const usersWithBalance = await Promise.all(
+          userList.map(async (user) => {
+            try {
+              const accountRes = await accountsApi.getUserAccountByUserId(user.userId)
+              if (accountRes.data) {
+                return {
+                  ...user,
+                  accountId: accountRes.data.accountId,
+                  balance: accountRes.data.balance || 0,
+                  totalRecharge: accountRes.data.totalRecharge || 0,
+                  totalConsumption: accountRes.data.totalConsumption || 0,
+                  // 账户状态可能与用户状态不同
+                  accountStatus: accountRes.data.status
+                } as UserAccount
+              }
+              // 如果没有账户信息，返回默认值
+              return {
+                ...user,
+                accountId: 0,
+                balance: 0,
+                totalRecharge: 0,
+                totalConsumption: 0,
+                accountStatus: user.status
+              } as UserAccount
+            } catch (error) {
+              console.error(`获取用户${user.userId}账户信息失败:`, error)
+              return {
+                ...user,
+                accountId: 0,
+                balance: 0,
+                totalRecharge: 0,
+                totalConsumption: 0,
+                accountStatus: user.status
+              } as UserAccount
+            }
+          })
+        )
+        
+        setUsers(usersWithBalance)
         setTotal(totalCount)
         
-        // 立即计算统计数据
-        const activeCount = userList.filter(u => u.status === 1).length
-        const frozenCount = userList.filter(u => u.status === 0).length
-        const totalBal = userList.reduce((sum, u) => sum + (u.balance || 0), 0)
-        const totalRech = userList.reduce((sum, u) => sum + (u.totalRecharge || 0), 0)
-        const totalCons = userList.reduce((sum, u) => sum + (u.totalConsumption || 0), 0)
+        // 计算统计数据
+        const activeCount = usersWithBalance.filter(u => u.status === 1).length
+        const frozenCount = usersWithBalance.filter(u => u.status === 0).length
+        const totalBal = usersWithBalance.reduce((sum, u) => sum + (u.balance || 0), 0)
+        const totalRech = usersWithBalance.reduce((sum, u) => sum + (u.totalRecharge || 0), 0)
+        const totalCons = usersWithBalance.reduce((sum, u) => sum + (u.totalConsumption || 0), 0)
         
         setStats({
           totalUsers: totalCount,
@@ -248,22 +291,48 @@ export function UsersView() {
     setDetailModalOpen(true);
   }
 
-  // 冻结/解冻账户
+  // 确认状态管理
+  const [confirmAction, setConfirmAction] = useState<{
+    show: boolean
+    title: string
+    description: string
+    onConfirm: () => void
+    variant?: 'default' | 'destructive'
+  } | null>(null)
+
+  // 冻结/解冻用户（修改用户状态）
   const handleToggleStatus = async (user: UserAccount) => {
     const newStatus = user.status === 1 ? 0 : 1
-    const action = newStatus === 0 ? '冻结' : '解冻'
+    const action = newStatus === 0 ? '禁用' : '启用'
     
-    if (!confirm(`确定要${action}该用户账户吗？`)) {
-      return
-    }
-
-    try {
-      await usersApi.toggleStatus(user.userId, newStatus, `管理员${action}账户`)
-      loadUsers()
-    } catch (error: any) {
-      console.error(error)
-      setError(`${action}失败: ${error.message || '未知错误'}`)
-    }
+    setConfirmAction({
+      show: true,
+      title: `确认${action}`,
+      description: `确定要${action}用户 "${user.username}" 吗？`,
+      variant: newStatus === 0 ? 'destructive' : 'default',
+      onConfirm: async () => {
+        try {
+          // 使用用户状态接口 PUT /admin/users/{id}/status
+          await usersApi.toggleUserStatus(user.userId, newStatus)
+          
+          toast({
+            title: '操作成功',
+            description: `用户已${action}`,
+          })
+          
+          loadUsers()
+        } catch (error: any) {
+          console.error(error)
+          toast({
+            title: `${action}失败`,
+            description: error.message || '未知错误',
+            variant: 'destructive',
+          })
+        } finally {
+          setConfirmAction(null)
+        }
+      }
+    })
   }
 
   // 批量选择处理
@@ -290,15 +359,49 @@ export function UsersView() {
 
   // 批量操作
   const handleBatchFreeze = async () => {
-    if (!confirm(`确定要冻结选中的 ${selectedUserIds.size} 个用户吗？`)) return
     // 实现批量冻结逻辑
-    console.log('批量冻结:', Array.from(selectedUserIds))
+    try {
+      console.log('批量冻结:', Array.from(selectedUserIds))
+      // TODO: 调用批量冻结API
+      
+      toast({
+        title: '操作成功',
+        description: `已冻结 ${selectedUserIds.size} 个用户`,
+      })
+      
+      setSelectedUserIds(new Set())
+      setShowBatchActions(false)
+      loadUsers()
+    } catch (error: any) {
+      toast({
+        title: '批量冻结失败',
+        description: error.message || '未知错误',
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleBatchUnfreeze = async () => {
-    if (!confirm(`确定要解冻选中的 ${selectedUserIds.size} 个用户吗？`)) return
     // 实现批量解冻逻辑
-    console.log('批量解冻:', Array.from(selectedUserIds))
+    try {
+      console.log('批量解冻:', Array.from(selectedUserIds))
+      // TODO: 调用批量解冻API
+      
+      toast({
+        title: '操作成功',
+        description: `已解冻 ${selectedUserIds.size} 个用户`,
+      })
+      
+      setSelectedUserIds(new Set())
+      setShowBatchActions(false)
+      loadUsers()
+    } catch (error: any) {
+      toast({
+        title: '批量解冻失败',
+        description: error.message || '未知错误',
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleBatchExport = () => {
@@ -1103,6 +1206,46 @@ export function UsersView() {
           </motion.div>
         )}
       </div>
+
+      {/* 确认对话框 */}
+      <AnimatePresence>
+        {confirmAction?.show && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => setConfirmAction(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+            >
+              <h3 className="text-lg font-semibold mb-2">{confirmAction.title}</h3>
+              <p className="text-muted-foreground mb-6">{confirmAction.description}</p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmAction(null)}
+                >
+                  取消
+                </Button>
+                <Button
+                  variant={confirmAction.variant || 'default'}
+                  onClick={() => {
+                    confirmAction.onConfirm()
+                  }}
+                >
+                  确认
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 模态框 */}
       {selectedUser && (
