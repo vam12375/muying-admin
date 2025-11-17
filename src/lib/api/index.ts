@@ -212,6 +212,7 @@ export * from './orders';
 export * from './reviews';
 export * from './points';
 export * from './users';
+export * from './accounts';
 export * from './profile';
 export * from './refund';
 
@@ -222,3 +223,5 @@ export { dashboardApi } from './dashboard';
 export { ordersApi } from './orders';
 export { profileApi } from './profile';
 export { refundApi, userRefundApi } from './refund';
+export { usersApi } from './users';
+export { accountsApi } from './accounts';
