@@ -116,7 +116,7 @@ export function MessagesViewEnhanced() {
       console.error('加载消息列表失败:', error);
       // 显示友好的错误提示
       if (error.message && !error.message.includes('统计接口')) {
-        alert(`加载失败: ${error.message}`);
+        showError(`加载失败: ${error.message}`);
       }
     } finally {
       setLoading(false);

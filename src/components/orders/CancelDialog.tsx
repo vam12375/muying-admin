@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
+import { showWarning } from '@/lib/utils/toast';
 
 interface CancelDialogProps {
   open: boolean;
@@ -27,7 +28,7 @@ export function CancelDialog({
 
   const handleSubmit = async () => {
     if (!reason.trim()) {
-      alert('请输入取消原因');
+      showWarning('请输入取消原因');
       return;
     }
 

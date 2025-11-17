@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, RefreshCw } from 'lucide-react';
 import { getEnabledLogisticsCompanies, generateTrackingNo } from '@/lib/api/logistics';
 import type { LogisticsCompany } from '@/types/logistics';
+import { showWarning, showError } from '@/lib/utils/toast';
 
 interface ShipDialogProps {
   open: boolean;
@@ -70,7 +71,7 @@ export function ShipDialog({
   // 生成物流单号
   const handleGenerateNo = async () => {
     if (!companyId) {
-      alert('请先选择物流公司');
+      showWarning('请先选择物流公司');
       return;
     }
 
@@ -85,7 +86,7 @@ export function ShipDialog({
       }
     } catch (error) {
       console.error('生成物流单号失败:', error);
-      alert('生成物流单号失败');
+      showError('生成物流单号失败');
     } finally {
       setGeneratingNo(false);
     }
@@ -94,7 +95,7 @@ export function ShipDialog({
   // 提交发货
   const handleSubmit = async () => {
     if (!companyId) {
-      alert('请选择物流公司');
+      showWarning('请选择物流公司');
       return;
     }
 
@@ -105,7 +106,7 @@ export function ShipDialog({
 
     if (!useOrderReceiver) {
       if (!receiverName || !receiverPhone || !receiverAddress) {
-        alert('请填写完整的收件人信息');
+        showWarning('请填写完整的收件人信息');
         return;
       }
       data.receiverName = receiverName;

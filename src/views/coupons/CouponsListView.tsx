@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { showSuccess, showError, showWarning } from '@/lib/utils/toast';
 
 import { Badge } from '@/components/ui/badge';
 import { couponsApi } from '@/lib/api/coupons';
@@ -143,7 +144,7 @@ export function CouponsListView() {
       loadStats();
     } catch (err: any) {
       console.error('删除失败:', err);
-      alert('删除失败: ' + err.message);
+      showError('删除失败: ' + err.message);
     }
   };
 
@@ -155,7 +156,7 @@ export function CouponsListView() {
       loadStats();
     } catch (err: any) {
       console.error('更新状态失败:', err);
-      alert('更新状态失败: ' + err.message);
+      showError('更新状态失败: ' + err.message);
     }
   };
 
@@ -173,7 +174,7 @@ export function CouponsListView() {
   // 批量删除
   const handleBatchDelete = async () => {
     if (selectedIds.length === 0) {
-      alert('请选择要删除的优惠券');
+      showWarning('请选择要删除的优惠券');
       return;
     }
     
@@ -186,7 +187,7 @@ export function CouponsListView() {
       loadStats();
     } catch (err: any) {
       console.error('批量删除失败:', err);
-      alert('批量删除失败: ' + err.message);
+      showError('批量删除失败: ' + err.message);
     }
   };
 

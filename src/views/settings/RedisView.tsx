@@ -20,6 +20,9 @@ import type { RedisKeyData, RedisInfoData, RedisValueData } from '@/types/redis'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { showSuccess, showError } from '@/lib/utils/toast';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/hooks/use-confirm';
 
 export default function RedisView() {
   // 状态管理
@@ -44,6 +47,9 @@ export default function RedisView() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentKey, setCurrentKey] = useState('');
   const [currentValue, setCurrentValue] = useState<RedisValueData | null>(null);
+  
+  // 确认对话框
+  const { confirm, confirmState, handleCancel } = useConfirm();
 
   // 获取键列表
   const fetchKeys = useCallback(async () => {
@@ -111,38 +117,50 @@ export default function RedisView() {
         setViewModalOpen(true);
       }
     } catch (err: any) {
-      alert(err.message || '获取键值失败');
+      showError(err.message || '获取键值失败');
     }
   };
 
   // 删除键
   const handleDelete = async (key: string) => {
-    if (!confirm(`确定要删除键 "${key}" 吗？`)) return;
+    const confirmed = await confirm({
+      title: '确认删除',
+      message: `确定要删除键 "${key}" 吗？`,
+      variant: 'danger',
+    });
+    
+    if (!confirmed) return;
     
     try {
       const response = await redisApi.deleteKey(key);
       if (response.success) {
-        alert('删除成功');
+        showSuccess('删除成功');
         fetchKeys();
       }
     } catch (err: any) {
-      alert(err.message || '删除失败');
+      showError(err.message || '删除失败');
     }
   };
 
   // 清空数据库
   const handleClearDb = async () => {
-    if (!confirm('确定要清空Redis数据库吗？此操作不可恢复！')) return;
+    const confirmed = await confirm({
+      title: '警告',
+      message: '确定要清空Redis数据库吗？\n此操作不可恢复！',
+      variant: 'danger',
+    });
+    
+    if (!confirmed) return;
     
     try {
       const response = await redisApi.clearDb();
       if (response.success) {
-        alert('清空成功');
+        showSuccess('清空成功');
         fetchKeys();
         fetchInfo();
       }
     } catch (err: any) {
-      alert(err.message || '清空失败');
+      showError(err.message || '清空失败');
     }
   };
 
@@ -559,6 +577,18 @@ export default function RedisView() {
           </div>
         </div>
       )}
+
+      {/* 确认对话框 */}
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmText={confirmState.confirmText}
+        cancelText={confirmState.cancelText}
+        variant={confirmState.variant}
+        onConfirm={confirmState.onConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

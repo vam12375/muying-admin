@@ -213,6 +213,7 @@ export * from './reviews';
 export * from './points';
 export * from './users';
 export * from './profile';
+export * from './refund';
 
 // 兼容旧的对象导出方式
 export { categoriesApi } from './categories';
@@ -220,3 +221,4 @@ export { productsApi } from './products';
 export { dashboardApi } from './dashboard';
 export { ordersApi } from './orders';
 export { profileApi } from './profile';
+export { refundApi, userRefundApi } from './refund';

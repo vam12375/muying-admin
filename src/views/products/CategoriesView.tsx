@@ -6,6 +6,7 @@ import { Search, Plus, Edit, Trash2, FolderTree, ChevronRight, ChevronDown, X, S
 import { categoriesApi } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import type { Category, CategoryFormData } from '@/types/category';
+import { showSuccess, showError, showWarning } from '@/lib/utils/toast';
 
 /**
  * 分类管理视图
@@ -176,7 +177,7 @@ export function CategoriesView() {
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      alert('请输入分类名称');
+      showWarning('请输入分类名称');
       return;
     }
 
@@ -185,17 +186,17 @@ export function CategoriesView() {
 
       if (modalMode === 'create') {
         await categoriesApi.create(formData);
-        alert('创建分类成功');
+        showSuccess('创建分类成功');
       } else if (editingCategory) {
         await categoriesApi.update(editingCategory.categoryId, formData);
-        alert('更新分类成功');
+        showSuccess('更新分类成功');
       }
 
       handleCloseModal();
       loadCategories();
     } catch (err: any) {
       console.error('提交失败:', err);
-      alert(err.message || '操作失败');
+      showError(err.message || '操作失败');
     } finally {
       setSubmitting(false);
     }
@@ -212,11 +213,11 @@ export function CategoriesView() {
 
     try {
       await categoriesApi.delete(category.categoryId);
-      alert('删除分类成功');
+      showSuccess('删除分类成功');
       loadCategories();
     } catch (err: any) {
       console.error('删除失败:', err);
-      alert(err.message || '删除失败');
+      showError(err.message || '删除失败');
     }
   };
 
@@ -228,11 +229,11 @@ export function CategoriesView() {
     
     try {
       await categoriesApi.updateStatus(category.categoryId, newStatus);
-      alert(`${newStatus === 1 ? '启用' : '禁用'}分类成功`);
+      showSuccess(`${newStatus === 1 ? '启用' : '禁用'}分类成功`);
       loadCategories();
     } catch (err: any) {
       console.error('更新状态失败:', err);
-      alert(err.message || '更新状态失败');
+      showError(err.message || '更新状态失败');
     }
   };
 

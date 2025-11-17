@@ -22,6 +22,7 @@ import {
 import RedisView from '@/views/settings/RedisView';
 import { SystemMonitorViewEnhanced } from '@/views/monitor/SystemMonitorViewEnhanced';
 import { ProfileView } from '@/views/profile/ProfileView';
+import { SystemLogsViewGSAP } from '@/views/settings/SystemLogsViewGSAP';
 import type { ViewType } from '@/types/dashboard';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -265,13 +266,17 @@ export function AdminDashboard() {
                 <SystemMonitorViewEnhanced />
               </motion.div>
             )}
-            {(selectedView === 'settings' || selectedView === 'system-config' || selectedView === 'system-logs') && (
+            {selectedView === 'system-logs' && (
+              <motion.div key="system-logs" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <SystemLogsViewGSAP />
+              </motion.div>
+            )}
+            {(selectedView === 'settings' || selectedView === 'system-config') && (
               <motion.div key="settings" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <div className="text-center py-12">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                     {selectedView === 'settings' && '系统设置'}
                     {selectedView === 'system-config' && '系统配置'}
-                    {selectedView === 'system-logs' && '系统日志'}
                   </h2>
                   <p className="text-slate-500 dark:text-slate-400 mt-2">功能开发中...</p>
                 </div>

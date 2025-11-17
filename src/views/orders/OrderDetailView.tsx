@@ -28,6 +28,7 @@ import { getOrderDetail, shipOrder as shipOrderApi } from '@/lib/api/orders';
 import { getLogisticsByOrderId, getLogisticsTracks } from '@/lib/api/logistics';
 import type { Order, OrderHistory } from '@/types/order';
 import type { Logistics, LogisticsTrack } from '@/types/logistics';
+import { showInfo } from '@/lib/utils/toast';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
@@ -168,7 +169,7 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
   };
 
   const handleExport = () => {
-    alert('导出功能待实现');
+    showInfo('导出功能待实现');
   };
   
   // 发货

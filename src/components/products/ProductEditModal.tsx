@@ -13,6 +13,7 @@ import { X, Save, Upload } from 'lucide-react';
 import type { Product, ProductFormData } from '@/types/product';
 import type { Brand } from '@/types/brand';
 import type { Category } from '@/types/category';
+import { showError } from '@/lib/utils/toast';
 
 interface ProductEditModalProps {
   product: Product | null;
@@ -133,7 +134,7 @@ export function ProductEditModal({
       onClose();
     } catch (error) {
       console.error('保存商品失败:', error);
-      alert('保存失败，请重试');
+      showError('保存失败，请重试');
     } finally {
       setSubmitting(false);
     }
