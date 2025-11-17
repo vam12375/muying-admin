@@ -1,76 +1,83 @@
 /**
- * 用户管理API
- * User Management API
+ * 用户基本信息管理API
+ * User Basic Information Management API
  * 
- * Source: 基于后端 AdminUserAccountController
+ * Source: 参考 USER_API_DESIGN.md
+ * 路径: /admin/users/* - 管理员对用户信息进行增删改查
  */
 
 import { fetchApi } from './index'
-import type { 
-  UserAccount, 
-  AccountTransaction, 
-  UserListParams, 
-  TransactionListParams,
-  RechargeRequest
-} from '@/types/user'
+import type { User, UserListParams } from '@/types/user'
 import type { PageResult } from '@/types/common'
 
 export const usersApi = {
   /**
-   * 分页获取用户账户列表
+   * 分页获取用户列表
+   * GET /admin/users/page
    */
-  getUserAccountPage: async (params: UserListParams) => {
-    return fetchApi<PageResult<UserAccount>>('/admin/users/page', { params })
+  getUserPage: async (params: UserListParams) => {
+    return fetchApi<PageResult<User>>('/admin/users/page', { params })
   },
 
   /**
-   * 获取用户账户详情
+   * 获取用户详情
+   * GET /admin/users/{id}
    */
-  getUserAccount: async (userId: number) => {
-    return fetchApi<UserAccount>(`/admin/users/${userId}`)
+  getUserById: async (userId: number) => {
+    return fetchApi<User>(`/admin/users/${userId}`)
   },
 
   /**
-   * 管理员给用户充值
+   * 添加用户
+   * POST /admin/users
    */
-  recharge: async (data: RechargeRequest) => {
-    return fetchApi<void>('/admin/users/recharge', {
+  addUser: async (data: Partial<User> & { password: string }) => {
+    return fetchApi<User>('/admin/users', {
       method: 'POST',
       body: JSON.stringify(data)
     })
   },
 
   /**
-   * 管理员调整用户余额
+   * 更新用户信息
+   * PUT /admin/users/{id}
    */
-  adjustBalance: async (userId: number, amount: number, reason: string) => {
-    return fetchApi<void>(`/admin/users/${userId}/balance`, {
+  updateUser: async (userId: number, data: Partial<User>) => {
+    return fetchApi<User>(`/admin/users/${userId}`, {
       method: 'PUT',
-      params: { amount, reason }
+      body: JSON.stringify(data)
     })
   },
 
   /**
-   * 更改用户账户状态（冻结/解冻）
+   * 删除用户
+   * DELETE /admin/users/{id}
    */
-  toggleStatus: async (userId: number, status: number, reason?: string) => {
+  deleteUser: async (userId: number) => {
+    return fetchApi<void>(`/admin/users/${userId}`, {
+      method: 'DELETE'
+    })
+  },
+
+  /**
+   * 修改用户状态
+   * PUT /admin/users/{id}/status
+   */
+  toggleUserStatus: async (userId: number, status: number) => {
     return fetchApi<void>(`/admin/users/${userId}/status`, {
       method: 'PUT',
-      params: { status, reason }
+      params: { status }
     })
   },
 
   /**
-   * 分页获取交易记录列表
+   * 修改用户角色
+   * PUT /admin/users/{id}/role
    */
-  getTransactionPage: async (params: TransactionListParams) => {
-    return fetchApi<PageResult<AccountTransaction>>('/admin/users/transactions/page', { params })
+  updateUserRole: async (userId: number, role: string) => {
+    return fetchApi<void>(`/admin/users/${userId}/role`, {
+      method: 'PUT',
+      params: { role }
+    })
   },
-
-  /**
-   * 获取交易记录详情
-   */
-  getTransactionDetail: async (transactionId: number) => {
-    return fetchApi<AccountTransaction>(`/admin/users/transactions/${transactionId}`)
-  }
 }
