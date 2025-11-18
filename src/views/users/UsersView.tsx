@@ -121,9 +121,19 @@ export function UsersView() {
     return 'card'
   })
 
-  // 排序状态
-  const [sortBy, setSortBy] = useState<'id' | 'balance' | 'createTime'>('id')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  // 排序状态（从localStorage读取用户偏好）
+  const [sortBy, setSortBy] = useState<'id' | 'balance' | 'createTime'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('userSortBy') as 'id' | 'balance' | 'createTime') || 'id'
+    }
+    return 'id'
+  })
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('userSortOrder') as 'asc' | 'desc') || 'asc'
+    }
+    return 'asc'
+  })
 
   // 切换视图模式
   const toggleViewMode = (mode: 'card' | 'list') => {
@@ -152,13 +162,23 @@ export function UsersView() {
     return sortOrder === 'asc' ? compareValue : -compareValue
   })
 
-  // 切换排序
+  // 切换排序（保存到localStorage）
   const toggleSort = (field: 'id' | 'balance' | 'createTime') => {
+    let newSortOrder: 'asc' | 'desc'
+    
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+      newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+      setSortOrder(newSortOrder)
     } else {
       setSortBy(field)
+      newSortOrder = 'asc'
       setSortOrder('asc')
+    }
+    
+    // 保存到localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userSortBy', field)
+      localStorage.setItem('userSortOrder', newSortOrder)
     }
   }
 
@@ -180,30 +200,67 @@ export function UsersView() {
         const userList = userResponse.data.records || []
         const totalCount = userResponse.data.total || 0
         
-        // 获取每个用户的账户余额信息
+        // 获取每个用户的账户余额信息和交易统计
         const usersWithBalance = await Promise.all(
           userList.map(async (user) => {
             try {
+              // 1. 获取账户基本信息
               const accountRes = await accountsApi.getUserAccountByUserId(user.userId)
+              
+              // 2. 获取交易记录并计算准确的统计数据
+              let totalRecharge = 0
+              let totalConsumption = 0
+              let balance = 0
+              let accountId = 0
+              let accountStatus = user.status
+              
               if (accountRes.data) {
-                return {
-                  ...user,
-                  accountId: accountRes.data.accountId,
-                  balance: accountRes.data.balance || 0,
-                  totalRecharge: accountRes.data.totalRecharge || 0,
-                  totalConsumption: accountRes.data.totalConsumption || 0,
-                  // 账户状态可能与用户状态不同
-                  accountStatus: accountRes.data.status
-                } as UserAccount
+                accountId = accountRes.data.accountId
+                balance = accountRes.data.balance || 0
+                accountStatus = accountRes.data.status
+                
+                try {
+                  // 获取该用户的所有交易记录
+                  const transactionRes = await accountsApi.getTransactionPage({
+                    userId: user.userId,
+                    page: 1,
+                    size: 9999 // 获取所有记录
+                  })
+                  
+                  if (transactionRes.data) {
+                    const allRecords = transactionRes.data.list || transactionRes.data.records || []
+                    
+                    // 计算累计充值（type=1，status=1）
+                    totalRecharge = allRecords
+                      .filter(t => t.type === 1 && t.status === 1)
+                      .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                    
+                    // 计算累计消费（type=2，status=1）
+                    totalConsumption = allRecords
+                      .filter(t => t.type === 2 && t.status === 1)
+                      .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                    
+                    console.log(`[UsersView] 用户${user.userId}统计:`, {
+                      totalRecharge,
+                      totalConsumption,
+                      recordCount: allRecords.length
+                    })
+                  }
+                } catch (txError) {
+                  console.warn(`获取用户${user.userId}交易记录失败，使用账户数据:`, txError)
+                  // 如果获取交易记录失败，使用账户信息中的数据
+                  totalRecharge = accountRes.data.totalRecharge || 0
+                  totalConsumption = accountRes.data.totalConsumption || 0
+                }
               }
-              // 如果没有账户信息，返回默认值
+              
               return {
                 ...user,
-                accountId: 0,
-                balance: 0,
-                totalRecharge: 0,
-                totalConsumption: 0,
-                accountStatus: user.status
+                accountId,
+                balance,
+                totalRecharge,
+                totalConsumption,
+                accountStatus
               } as UserAccount
             } catch (error) {
               console.error(`获取用户${user.userId}账户信息失败:`, error)

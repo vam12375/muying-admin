@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Baby, ChevronLeft, ChevronRight, Search, LogOut } from 'lucide-react';
 import { navigationItems } from '@/lib/constants';
@@ -24,6 +25,40 @@ export function Sidebar({
   onItemClick,
   onSearchChange,
 }: SidebarProps) {
+  const router = useRouter();
+  
+  // 子菜单展开状态管理
+  const [expandedMenus, setExpandedMenus] = React.useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar_expanded_menus');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    }
+    return new Set();
+  });
+
+  // 切换子菜单展开状态
+  const toggleMenu = (menuId: string) => {
+    const newExpanded = new Set(expandedMenus);
+    if (newExpanded.has(menuId)) {
+      newExpanded.delete(menuId);
+    } else {
+      newExpanded.add(menuId);
+    }
+    setExpandedMenus(newExpanded);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar_expanded_menus', JSON.stringify(Array.from(newExpanded)));
+    }
+  };
+
+  // 处理子菜单点击
+  const handleChildClick = (child: any) => {
+    if (child.href) {
+      // 使用 Next.js 路由导航，不会刷新整个页面
+      router.push(child.href);
+    } else {
+      onItemClick(child.id);
+    }
+  };
   return (
     <motion.div
       initial={false}
@@ -87,10 +122,19 @@ export function Sidebar({
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeItem === item.id;
+            const hasChildren = item.children && item.children.length > 0;
+            const isExpanded = expandedMenus.has(item.id);
+            
             return (
               <li key={item.id}>
                 <button
-                  onClick={() => onItemClick(item.id)}
+                  onClick={() => {
+                    if (hasChildren) {
+                      toggleMenu(item.id);
+                    } else {
+                      onItemClick(item.id);
+                    }
+                  }}
                   className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-md text-left transition-all duration-200 group
                     ${isActive
                       ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
@@ -109,15 +153,24 @@ export function Sidebar({
                       <span className={`text-sm ${isActive ? "font-medium" : "font-normal"}`}>
                         {item.name}
                       </span>
-                      {item.badge && (
-                        <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full
-                          ${isActive
-                            ? "bg-white/20 text-white"
-                            : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"}`}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {item.badge && (
+                          <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full
+                            ${isActive
+                              ? "bg-white/20 text-white"
+                              : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"}`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                        {hasChildren && (
+                          <ChevronRight
+                            className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                              isExpanded ? 'rotate-90' : ''
+                            } ${isActive ? 'text-white' : 'text-slate-400'}`}
+                          />
+                        )}
+                      </div>
                     </div>
                   )}
                   {isCollapsed && item.badge && (
@@ -128,6 +181,38 @@ export function Sidebar({
                     </div>
                   )}
                 </button>
+                
+                {/* 子菜单 */}
+                {hasChildren && isExpanded && !isCollapsed && (
+                  <motion.ul
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-1 ml-6 space-y-0.5 border-l-2 border-slate-200 dark:border-slate-700 pl-3"
+                  >
+                    {item.children!.map((child) => {
+                      const ChildIcon = child.icon;
+                      const isChildActive = activeItem === child.id;
+                      return (
+                        <li key={child.id}>
+                          <button
+                            onClick={() => handleChildClick(child)}
+                            className={`w-full flex items-center space-x-2 px-3 py-2 rounded-md text-left transition-all duration-200 group
+                              ${isChildActive
+                                ? "bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700"}`}
+                          >
+                            <ChildIcon className={`h-3.5 w-3.5 flex-shrink-0 ${isChildActive ? 'text-pink-600 dark:text-pink-400' : 'text-slate-400'}`} />
+                            <span className={`text-sm ${isChildActive ? 'font-medium' : 'font-normal'}`}>
+                              {child.name}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </motion.ul>
+                )}
               </li>
             );
           })}

@@ -251,31 +251,92 @@ export function CouponsListView() {
         </Button>
       </motion.div>
 
-      {/* 统计卡片 */}
+      {/* 统计卡片 - 基于色彩科学的现代设计 */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[
-            { label: '总优惠券', value: stats.totalCoupons, color: 'from-pink-500 to-rose-500' },
-            { label: '活跃中', value: stats.activeCoupons, color: 'from-green-500 to-emerald-500' },
-            { label: '已使用', value: stats.usedCoupons, color: 'from-blue-500 to-cyan-500' },
-            { label: '已过期', value: stats.expiredCoupons, color: 'from-red-500 to-orange-500' },
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50"
-            >
-              <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3`}>
-                <Gift className="h-6 w-6 text-white" />
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
-              <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">
-                {stat.value ?? 0}
-              </p>
-            </motion.div>
-          ))}
+            { 
+              label: '总优惠券', 
+              value: stats.totalCoupons, 
+              gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
+              bgPattern: 'from-violet-50 to-purple-50',
+              icon: Gift,
+              trend: '+12%'
+            },
+            { 
+              label: '活跃中', 
+              value: stats.activeCoupons, 
+              gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
+              bgPattern: 'from-emerald-50 to-teal-50',
+              icon: CheckCircle,
+              trend: '+8%'
+            },
+            { 
+              label: '已使用', 
+              value: stats.usedCoupons, 
+              gradient: 'from-blue-500 via-indigo-500 to-purple-500',
+              bgPattern: 'from-blue-50 to-indigo-50',
+              icon: Gift,
+              trend: '+15%'
+            },
+            { 
+              label: '已过期', 
+              value: stats.expiredCoupons, 
+              gradient: 'from-orange-500 via-red-500 to-pink-500',
+              bgPattern: 'from-orange-50 to-red-50',
+              icon: XCircle,
+              trend: '-3%'
+            },
+          ].map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="group relative bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-300 overflow-hidden"
+              >
+                {/* 背景渐变装饰 */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgPattern} dark:opacity-10 opacity-50 transition-opacity group-hover:opacity-70`}></div>
+                
+                {/* 背景图案 */}
+                <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
+                  <div className={`w-full h-full bg-gradient-to-br ${stat.gradient} rounded-full transform translate-x-12 -translate-y-12`}></div>
+                </div>
+                
+                {/* 内容 */}
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                      <IconComponent className="h-7 w-7 text-white" />
+                    </div>
+                    <div className={`px-2 py-1 rounded-lg text-xs font-semibold ${
+                      stat.trend.startsWith('+') 
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                      {stat.trend}
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+                    {stat.label}
+                  </p>
+                  
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                      {stat.value ?? 0}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">张</p>
+                  </div>
+                  
+                  {/* 底部装饰线 */}
+                  <div className={`mt-4 h-1 rounded-full bg-gradient-to-r ${stat.gradient} transform origin-left transition-transform group-hover:scale-x-100 scale-x-0`}></div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
@@ -443,28 +504,47 @@ export function CouponsListView() {
                       />
                     </div>
 
-                    {/* 优惠券视觉卡片 */}
+                    {/* 优惠券视觉卡片 - 基于色彩科学的现代设计 */}
                     <div className="flex-shrink-0">
-                      <div className={`relative w-32 h-24 rounded-lg overflow-hidden ${
+                      <div className={`relative w-40 h-28 rounded-2xl overflow-hidden shadow-lg transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl ${
                         coupon.type === CouponType.FIXED 
-                          ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
-                          : 'bg-gradient-to-br from-green-500 to-green-600'
+                          ? 'bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-600' 
+                          : 'bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600'
                       }`}>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                          <div className="text-2xl font-bold">
+                        {/* 背景装饰图案 */}
+                        <div className="absolute inset-0 opacity-10">
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full -translate-y-12 translate-x-12"></div>
+                          <div className="absolute bottom-0 left-0 w-20 h-20 bg-white rounded-full translate-y-10 -translate-x-10"></div>
+                        </div>
+                        
+                        {/* 主要内容 */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
+                          <div className="text-xs font-medium opacity-90 mb-1">
+                            {coupon.type === CouponType.FIXED ? '立减' : '折扣'}
+                          </div>
+                          <div className="text-3xl font-black tracking-tight">
                             {coupon.type === CouponType.FIXED
                               ? `¥${coupon.value}`
                               : `${coupon.value}折`}
                           </div>
                           {coupon.minSpend > 0 && (
-                            <div className="text-xs mt-1 opacity-90">
-                              满¥{coupon.minSpend}可用
+                            <div className="text-xs mt-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full">
+                              满¥{coupon.minSpend}
                             </div>
                           )}
                         </div>
-                        {/* 装饰性圆圈 */}
-                        <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-100 dark:bg-slate-900 rounded-full"></div>
-                        <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-100 dark:bg-slate-900 rounded-full"></div>
+                        
+                        {/* 左右装饰性半圆 */}
+                        <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-slate-900 rounded-full shadow-inner"></div>
+                        <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-slate-900 rounded-full shadow-inner"></div>
+                        
+                        {/* 虚线分割 */}
+                        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px border-t-2 border-dashed border-white/30"></div>
+                        
+                        {/* 状态角标 */}
+                        {coupon.status === CouponStatus.ACTIVE && (
+                          <div className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full animate-pulse shadow-lg"></div>
+                        )}
                       </div>
                     </div>
 
@@ -485,29 +565,48 @@ export function CouponsListView() {
                         </div>
                       </div>
 
-                      {/* 统计信息 */}
-                      <div className="grid grid-cols-4 gap-4 mb-3">
-                        <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">已领取</p>
-                          <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                      {/* 统计信息 - 精致卡片设计 */}
+                      <div className="grid grid-cols-4 gap-3 mb-3">
+                        <div className="relative bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-3 border border-blue-100 dark:border-blue-800/30 overflow-hidden">
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rounded-full -translate-y-8 translate-x-8"></div>
+                          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1.5 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                            已领取
+                          </p>
+                          <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
                             {coupon.receivedQuantity}
                           </p>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">已使用</p>
-                          <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                        
+                        <div className="relative bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-3 border border-emerald-100 dark:border-emerald-800/30 overflow-hidden">
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8"></div>
+                          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-1.5 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                            已使用
+                          </p>
+                          <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
                             {coupon.usedQuantity}
                           </p>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">使用率</p>
-                          <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                        
+                        <div className="relative bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 rounded-xl p-3 border border-purple-100 dark:border-purple-800/30 overflow-hidden">
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-full -translate-y-8 translate-x-8"></div>
+                          <p className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1.5 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                            使用率
+                          </p>
+                          <p className="text-xl font-bold text-purple-700 dark:text-purple-300">
                             {getUsageRate(coupon)}%
                           </p>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">剩余</p>
-                          <p className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                        
+                        <div className="relative bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl p-3 border border-orange-100 dark:border-orange-800/30 overflow-hidden">
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/5 rounded-full -translate-y-8 translate-x-8"></div>
+                          <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mb-1.5 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                            剩余
+                          </p>
+                          <p className="text-xl font-bold text-orange-700 dark:text-orange-300">
                             {coupon.totalQuantity - coupon.receivedQuantity}
                           </p>
                         </div>

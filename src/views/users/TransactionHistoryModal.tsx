@@ -52,6 +52,13 @@ export function TransactionHistoryModal({ open, onClose, user }: TransactionHist
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize] = useState(10)
   const [total, setTotal] = useState(0)
+  
+  // 统计数据（从交易记录实时计算）
+  const [stats, setStats] = useState({
+    totalRecharge: user.totalRecharge || 0,
+    totalConsumption: user.totalConsumption || 0,
+    currentBalance: user.balance || 0
+  })
 
   // 加载交易记录
   const loadTransactions = async () => {
@@ -84,6 +91,11 @@ export function TransactionHistoryModal({ open, onClose, user }: TransactionHist
         
         setTransactions(records)
         setTotal(totalCount)
+        
+        // 如果是第一页，计算统计数据（从所有交易记录中计算）
+        if (currentPage === 1) {
+          await calculateStats()
+        }
       } else {
         console.warn('[TransactionHistory] 响应数据为空')
         setTransactions([])
@@ -109,6 +121,59 @@ export function TransactionHistoryModal({ open, onClose, user }: TransactionHist
       setLoading(false)
     }
   } // 结束 loadTransactions 函数
+
+  // 计算统计数据（从所有交易记录中实时计算）
+  const calculateStats = async () => {
+    try {
+      console.log('[TransactionHistory] 开始计算统计数据')
+      
+      // 获取所有交易记录（不分页）
+      const response = await accountsApi.getTransactionPage({
+        userId: user.userId,
+        page: 1,
+        size: 9999 // 获取所有记录
+      })
+      
+      if (response.data) {
+        const allRecords = response.data.list || response.data.records || []
+        
+        // 计算累计充值（type=1，status=1）
+        const totalRecharge = allRecords
+          .filter(t => t.type === 1 && t.status === 1)
+          .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+        
+        // 计算累计消费（type=2，status=1）
+        const totalConsumption = allRecords
+          .filter(t => t.type === 2 && t.status === 1)
+          .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+        
+        // 获取最新的余额（从最新的交易记录中获取）
+        const latestTransaction = allRecords[0]
+        const currentBalance = latestTransaction ? latestTransaction.afterBalance : user.balance
+        
+        console.log('[TransactionHistory] 统计结果:', {
+          totalRecharge,
+          totalConsumption,
+          currentBalance,
+          recordCount: allRecords.length
+        })
+        
+        setStats({
+          totalRecharge,
+          totalConsumption,
+          currentBalance
+        })
+      }
+    } catch (error: any) {
+      console.error('[TransactionHistory] 计算统计数据失败:', error)
+      // 如果计算失败，使用用户对象中的数据
+      setStats({
+        totalRecharge: user.totalRecharge || 0,
+        totalConsumption: user.totalConsumption || 0,
+        currentBalance: user.balance || 0
+      })
+    }
+  }
 
   useEffect(() => {
     if (open) {
@@ -293,7 +358,7 @@ export function TransactionHistoryModal({ open, onClose, user }: TransactionHist
                     当前余额
                   </div>
                   <div className="text-3xl font-bold text-gray-900">
-                    ¥{user.balance.toFixed(2)}
+                    ¥{stats.currentBalance.toFixed(2)}
                   </div>
                 </motion.div>
 
@@ -308,7 +373,7 @@ export function TransactionHistoryModal({ open, onClose, user }: TransactionHist
                     累计充值
                   </div>
                   <div className="text-3xl font-bold text-emerald-600">
-                    ¥{user.totalRecharge.toFixed(2)}
+                    ¥{stats.totalRecharge.toFixed(2)}
                   </div>
                 </motion.div>
 
@@ -323,7 +388,7 @@ export function TransactionHistoryModal({ open, onClose, user }: TransactionHist
                     累计消费
                   </div>
                   <div className="text-3xl font-bold text-red-600">
-                    ¥{user.totalConsumption.toFixed(2)}
+                    ¥{stats.totalConsumption.toFixed(2)}
                   </div>
                 </motion.div>
               </div>
