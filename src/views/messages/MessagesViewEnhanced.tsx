@@ -126,10 +126,45 @@ export function MessagesViewEnhanced() {
   // 加载统计数据
   const loadStatistics = async () => {
     try {
+      // 尝试从后端获取统计数据
       const stats = await getMessageStatistics();
-      setStatistics(stats);
+      
+      // 如果后端返回的数据都是0，说明接口未实现，需要从消息列表计算
+      if (stats.totalMessages === 0 && stats.sentMessages === 0) {
+        console.log('后端统计接口未实现，从消息列表计算统计数据');
+        
+        // 获取所有消息（不分页）
+        const allMessagesResult = await getMessageList({
+          page: 1,
+          pageSize: 9999 // 获取所有消息
+        });
+        
+        const allMessages = allMessagesResult.records || [];
+        
+        // 计算统计数据
+        const calculatedStats: MessageStatistics = {
+          totalMessages: allMessages.length,
+          sentMessages: allMessages.filter(m => m.status === 'sent').length,
+          draftMessages: allMessages.filter(m => m.status === 'draft').length,
+          totalReadCount: allMessages.reduce((sum, m) => sum + (m.readCount || 0), 0),
+          totalRecipients: allMessages.reduce((sum, m) => sum + (m.totalCount || 0), 0)
+        };
+        
+        console.log('计算得到的统计数据:', calculatedStats);
+        setStatistics(calculatedStats);
+      } else {
+        setStatistics(stats);
+      }
     } catch (error) {
       console.error('加载统计数据失败:', error);
+      // 设置默认值
+      setStatistics({
+        totalMessages: 0,
+        sentMessages: 0,
+        draftMessages: 0,
+        totalReadCount: 0,
+        totalRecipients: 0
+      });
     }
   };
 
