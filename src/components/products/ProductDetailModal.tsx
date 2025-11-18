@@ -10,6 +10,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Package, Tag, DollarSign, Layers, TrendingUp, Star, Calendar } from 'lucide-react';
 import type { Product } from '@/types/product';
+import { getBrandLogoUrl } from '@/lib/utils/image';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -57,11 +58,13 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 商品图片 */}
                 <div className="space-y-4">
-                  <img
-                    src={product.productImg ? (product.productImg.startsWith('http') ? product.productImg : `http://localhost:5173/products/${product.productImg}`) : '/placeholder.png'}
-                    alt={product.productName}
-                    className="w-full h-80 object-cover rounded-lg"
-                  />
+                  <div className="w-full h-80 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
+                    <img
+                      src={product.productImg ? (product.productImg.startsWith('http') ? product.productImg : `http://localhost:5173/products/${product.productImg}`) : '/placeholder.png'}
+                      alt={product.productName}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
                   {product.images && product.images.length > 0 && (
                     <div className="grid grid-cols-4 gap-2">
                       {product.images.map((img, index) => (
@@ -144,9 +147,24 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
                     <div className="flex items-center gap-2">
                       <Tag className="w-5 h-5 text-gray-400" />
                       <span className="text-sm text-gray-500">品牌:</span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {product.brandName || '-'}
-                      </span>
+                      {product.brandName && product.brandName !== '-' ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={getBrandLogoUrl(product.brandLogo)}
+                            alt={product.brandName}
+                            className="w-6 h-6 rounded object-contain bg-gray-50"
+                            onError={(e) => {
+                              // 如果图片加载失败，显示占位符
+                              e.currentTarget.src = 'https://via.placeholder.com/24?text=?';
+                            }}
+                          />
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.brandName}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-medium text-gray-900">-</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-5 h-5 text-gray-400" />

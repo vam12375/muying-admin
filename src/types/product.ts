@@ -33,6 +33,7 @@ export interface Product {
   specsList?: any[] | null;    // 规格列表
   categoryName?: string;       // 分类名称
   brandName?: string;          // 品牌名称
+  brandLogo?: string;          // 品牌Logo
 }
 
 /**
