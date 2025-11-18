@@ -78,7 +78,14 @@ export function ProductsView() {
     try {
       const response = await getAllBrands();
       if (response.success && response.data) {
-        setBrands(response.data);
+        // 数据映射：处理后端字段名不一致的问题
+        // 后端可能返回 id 而不是 brandId
+        const brandList = response.data.map((brand: any) => ({
+          ...brand,
+          brandId: brand.brandId || brand.id,  // 优先使用 brandId，如果不存在则使用 id
+        }));
+        console.log('加载的品牌列表:', brandList);
+        setBrands(brandList);
       }
     } catch (error) {
       console.error('加载品牌列表失败:', error);
@@ -89,6 +96,7 @@ export function ProductsView() {
     try {
       const response = await getCategoryList();
       if (response.success && response.data) {
+        console.log('加载的分类列表:', response.data);
         setCategories(response.data);
       }
     } catch (error) {
@@ -147,7 +155,32 @@ export function ProductsView() {
     try {
       const response = await getProductDetail(id);
       if (response.success && response.data) {
-        setSelectedProduct(response.data);
+        const productData = response.data;
+        
+        // 调试信息
+        console.log('商品详情数据:', productData);
+        console.log('商品的categoryId:', productData.categoryId);
+        console.log('商品的brandId:', productData.brandId);
+        console.log('所有分类:', categories);
+        console.log('所有品牌:', brands);
+        
+        // 查找分类和品牌（使用 == 而不是 === 以处理字符串/数字类型不匹配）
+        const category = categories.find(c => c.categoryId == productData.categoryId);
+        const brand = brands.find(b => b.brandId == productData.brandId);
+        
+        console.log('找到的分类:', category);
+        console.log('找到的品牌:', brand);
+        
+        // 添加分类和品牌名称及Logo
+        const productWithNames = {
+          ...productData,
+          categoryName: category?.name || '-',
+          brandName: brand?.name || '-',
+          brandLogo: brand?.logo || ''
+        };
+        
+        console.log('最终商品数据:', productWithNames);
+        setSelectedProduct(productWithNames);
         setDetailModalOpen(true);
       }
     } catch (error) {
@@ -161,7 +194,17 @@ export function ProductsView() {
     try {
       const response = await getProductDetail(id);
       if (response.success && response.data) {
-        setSelectedProduct(response.data);
+        const productData = response.data;
+        
+        // 添加分类和品牌名称及Logo（使用 == 而不是 === 以处理字符串/数字类型不匹配）
+        const brand = brands.find(b => b.brandId == productData.brandId);
+        const productWithNames = {
+          ...productData,
+          categoryName: categories.find(c => c.categoryId == productData.categoryId)?.name || '-',
+          brandName: brand?.name || '-',
+          brandLogo: brand?.logo || ''
+        };
+        setSelectedProduct(productWithNames);
         setEditModalOpen(true);
       }
     } catch (error) {
