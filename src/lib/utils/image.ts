@@ -10,7 +10,7 @@
  */
 export function getProductImageUrl(imageUrl: string | null | undefined): string {
   if (!imageUrl) {
-    return '/placeholder.png';
+    return '/placeholder.svg';
   }
   
   // 如果已经是完整URL，直接返回
@@ -48,7 +48,7 @@ export function getImageUrl(
   folder: string = 'products'
 ): string {
   if (!imageUrl) {
-    return '/placeholder.png';
+    return '/placeholder.svg';
   }
   
   // 如果已经是完整URL，直接返回
