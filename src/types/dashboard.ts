@@ -41,6 +41,7 @@ export type ViewType =
   | 'product-list'
   | 'product-category'
   | 'brand-management'
+  | 'product-images'
   | 'product-analytics'
   | 'reviews' 
   | 'orders' 

@@ -67,6 +67,7 @@ export interface ProductFormData {
   isRecommend?: number;        // 是否推荐
   images?: string[];           // 商品图片列表
   specsList?: any[];           // 规格列表
+  detailImages?: string[];     // 商品详情图列表（最多6张）
 }
 
 /**
