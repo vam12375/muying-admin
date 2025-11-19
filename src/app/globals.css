@@ -12,6 +12,8 @@
   font-display: swap;
 }
 
+/* Nunito 圆体数字字体 - 通过 layout.tsx 的 <link> 标签加载 */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -53,38 +55,61 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* 🎨 母婴系统专属色彩 - 从"促销传单"到"高级护理" */
+  --radius: 1.25rem; /* 提升至20px，圆润如婴儿肌肤 */
+  
+  /* 背景色 - 加入暖色倾向 (Warm Gray/Cream) */
+  --background: oklch(0.99 0.005 85); /* 温暖的奶油白 */
+  --foreground: oklch(0.25 0.01 280); /* 柔和的深灰 */
+  
+  /* 卡片 - 纸张般柔和 */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.25 0.01 280);
+  
+  /* 弹出层 */
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.25 0.01 280);
+  
+  /* 主色调 - 珊瑚粉 (Coral Pink) 替代玫红 */
+  --primary: oklch(0.65 0.15 25); /* 柔和的珊瑚粉 */
+  --primary-foreground: oklch(0.99 0 0);
+  
+  /* 次要色 - 马卡龙色系 */
+  --secondary: oklch(0.95 0.02 85); /* 淡奶油色 */
+  --secondary-foreground: oklch(0.35 0.05 280);
+  
+  /* 静音色 */
+  --muted: oklch(0.96 0.01 85);
+  --muted-foreground: oklch(0.5 0.01 280);
+  
+  /* 强调色 - 浅粉色背景 */
+  --accent: oklch(0.97 0.03 25);
+  --accent-foreground: oklch(0.35 0.08 25);
+  
+  /* 警告色 - 柔和的肉桂色 */
+  --destructive: oklch(0.6 0.18 35);
+  
+  /* 边框 - 更柔和 */
+  --border: oklch(0.94 0.01 85);
+  --input: oklch(0.94 0.01 85);
+  --ring: oklch(0.65 0.15 25);
+  
+  /* 图表色 - 马卡龙色系 (Pastel Colors) */
+  --chart-1: oklch(0.75 0.12 25); /* 雾霾粉 */
+  --chart-2: oklch(0.75 0.10 200); /* 雾霾蓝 */
+  --chart-3: oklch(0.75 0.12 140); /* 鼠尾草绿 */
+  --chart-4: oklch(0.75 0.12 60); /* 柔和黄 */
+  --chart-5: oklch(0.75 0.12 300); /* 薰衣草紫 */
+  
+  /* 侧边栏 - 磨砂玻璃质感 */
+  --sidebar: oklch(0.99 0.005 85);
+  --sidebar-foreground: oklch(0.3 0.01 280);
+  --sidebar-primary: oklch(0.65 0.15 25); /* 珊瑚粉 */
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.97 0.03 25); /* 浅粉色 */
+  --sidebar-accent-foreground: oklch(0.35 0.08 25);
+  --sidebar-border: oklch(0.94 0.01 85);
+  --sidebar-ring: oklch(0.65 0.15 25);
 }
 
 .dark {
@@ -127,6 +152,54 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* 🌟 母婴感细节优化 */
+  /* 全局圆角提升至16-24px */
+  .rounded-lg {
+    border-radius: 1rem !important; /* 16px */
+  }
+  .rounded-xl {
+    border-radius: 1.25rem !important; /* 20px */
+  }
+  .rounded-2xl {
+    border-radius: 1.5rem !important; /* 24px */
+  }
+  
+  /* Pill shape 按钮 */
+  button, .btn {
+    border-radius: 9999px !important;
+  }
+  
+  /* 卡片圆角 */
+  .card {
+    border-radius: 1.25rem !important;
+  }
+  
+  /* 彩色弥散阴影 (Glow) */
+  .shadow-glow-pink {
+    box-shadow: 0 8px 32px rgba(255, 182, 193, 0.3);
+  }
+  .shadow-glow-blue {
+    box-shadow: 0 8px 32px rgba(173, 216, 230, 0.3);
+  }
+  .shadow-glow-purple {
+    box-shadow: 0 8px 32px rgba(221, 160, 221, 0.3);
+  }
+  
+  /* 磨砂玻璃质感 (Glassmorphism) */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -297,13 +370,19 @@ td {
   font-weight: 700 !important;
 }
 
-/* 统计数字 (特大号) */
+/* 统计数字 (特大号) - 使用圆体数字字体 */
 .stat-number,
 .display-number {
   font-size: 2.8rem !important;     /* 45px - 仪表盘统计数字 */
   line-height: 1.1 !important;
   letter-spacing: -0.03em !important;
   font-weight: 700 !important;
+  font-family: 'Nunito', 'Quicksand', 'Alibaba PuHuiTi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* 数字使用圆体字体 */
+.text-3xl, .text-2xl, .text-xl {
+  font-family: 'Nunito', 'Quicksand', 'Alibaba PuHuiTi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 /* 卡片标题 */

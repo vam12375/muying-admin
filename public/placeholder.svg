@@ -1,0 +1,10 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#f3f4f6"/>
+  <g transform="translate(100, 100)">
+    <circle r="30" fill="#d1d5db"/>
+    <path d="M -15 -5 L -15 5 L 15 5 L 15 -5 Z M -10 -15 L -10 -5 L 10 -5 L 10 -15 Z" fill="#9ca3af"/>
+  </g>
+  <text x="100" y="170" font-family="Arial, sans-serif" font-size="14" fill="#6b7280" text-anchor="middle">
+    暂无图片
+  </text>
+</svg>
