@@ -18,6 +18,7 @@ interface ImageUploadProps {
   accept?: string;
   folder?: string; // 上传到的文件夹，如 'products', 'brands' 等
   filename?: string; // 自定义文件名（不含后缀）
+  disabled?: boolean; // 是否禁用上传
 }
 
 export function ImageUpload({
@@ -26,7 +27,8 @@ export function ImageUpload({
   maxSize = 5,
   accept = 'image/jpeg,image/png,image/jpg,image/webp',
   folder = 'products',
-  filename
+  filename,
+  disabled = false
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string>(value);
@@ -132,7 +134,9 @@ export function ImageUpload({
 
   // 触发文件选择
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!disabled) {
+      fileInputRef.current?.click();
+    }
   };
 
   return (
@@ -143,6 +147,7 @@ export function ImageUpload({
         accept={accept}
         onChange={handleFileSelect}
         className="hidden"
+        disabled={disabled}
       />
 
       {preview ? (
@@ -150,25 +155,27 @@ export function ImageUpload({
           <OptimizedImage
             src={preview}
             alt="预览"
-            className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+            className={`w-32 h-32 object-cover rounded-lg border border-gray-200 ${disabled ? 'opacity-50' : ''}`}
             folder={folder as 'products' | 'brands' | 'avatars'}
             width={128}
             height={128}
             lazy={false}
           />
-          <button
-            type="button"
-            onClick={handleRemove}
-            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          {!disabled && (
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ) : (
         <button
           type="button"
           onClick={handleClick}
-          disabled={uploading}
+          disabled={uploading || disabled}
           className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {uploading ? (
@@ -179,7 +186,7 @@ export function ImageUpload({
           ) : (
             <>
               <Upload className="w-8 h-8 text-gray-400" />
-              <span className="text-sm text-gray-500">点击上传</span>
+              <span className="text-sm text-gray-500">{disabled ? '请先填写商品编号' : '点击上传'}</span>
             </>
           )}
         </button>

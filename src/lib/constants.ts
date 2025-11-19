@@ -21,6 +21,7 @@ import {
   Sliders,
   FileText as FileLog,
   Database,
+  Image,
 } from 'lucide-react';
 import { NavigationItem, StatCard, Product, Order } from '@/types/dashboard';
 
@@ -39,6 +40,7 @@ export const navigationItems: NavigationItem[] = [
       { id: "product-list", name: "商品列表", icon: LayoutGrid, href: "/products/list" },
       { id: "product-category", name: "商品分类", icon: FolderTree, href: "/products/category" },
       { id: "brand-management", name: "品牌管理", icon: Tag, href: "/products/brands" },
+      { id: "product-images", name: "商品图片", icon: Image, href: "/products/images" },
       { id: "product-analytics", name: "商品分析", icon: TrendingUp, href: "/products/analytics" },
     ]
   },

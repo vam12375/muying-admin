@@ -54,11 +54,14 @@ export function ProductEditModal({
   // 当商品数据变化时更新表单
   useEffect(() => {
     if (product) {
+      // 编辑商品时，如果商品编号为空，自动填充为 BY + 商品ID
+      const autoProductSn = product.productSn || `BY${product.productId}`;
+      
       setFormData({
         categoryId: product.categoryId || 0,
         brandId: product.brandId || 0,
         productName: product.productName || '',
-        productSn: product.productSn || '',
+        productSn: autoProductSn,
         productImg: product.productImg || '',
         productDetail: product.productDetail || '',
         priceNew: product.priceNew || 0,
@@ -72,7 +75,7 @@ export function ProductEditModal({
         specsList: product.specsList || undefined,
       });
     } else {
-      // 重置表单
+      // 新增商品时，重置表单（商品编号为空，由用户手动输入）
       setFormData({
         categoryId: 0,
         brandId: 0,
@@ -205,10 +208,20 @@ export function ProductEditModal({
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.productSn ? 'border-red-500' : 'border-gray-200'
                     }`}
-                    placeholder="请输入商品编号"
+                    placeholder={product ? `BY${product.productId}` : "请输入商品编号"}
                   />
                   {errors.productSn && (
                     <p className="text-sm text-red-500 mt-1">{errors.productSn}</p>
+                  )}
+                  {!product && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      建议格式：BY + 数字（如 BY001），也可自定义
+                    </p>
+                  )}
+                  {product && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      默认为 BY{product.productId}，可手动修改
+                    </p>
                   )}
                 </div>
 
@@ -334,10 +347,10 @@ export function ProductEditModal({
                   </select>
                 </div>
 
-                {/* 商品图片 */}
+                {/* 商品主图 */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    商品图片 *
+                    商品主图 *
                   </label>
                   <ImageUpload
                     value={formData.productImg}
@@ -353,6 +366,48 @@ export function ProductEditModal({
                       图片将命名为: goods{formData.productSn.replace(/[^0-9]/g, '')}.jpg
                     </p>
                   )}
+                </div>
+
+                {/* 商品详情图 */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    商品详情图
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    最多上传6张商品详情图，图片将自动命名为 desc_{formData.productSn ? formData.productSn.replace(/[^0-9]/g, '') : 'xx'}_01.jpg ~ desc_{formData.productSn ? formData.productSn.replace(/[^0-9]/g, '') : 'xx'}_06.jpg
+                  </p>
+                  
+                  {!formData.productSn && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                      <p className="text-sm text-yellow-700">请先填写商品编号后再上传详情图</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-3 gap-4">
+                    {[1, 2, 3, 4, 5, 6].map((index) => {
+                      const detailImages = formData.detailImages || [];
+                      const currentImage = detailImages[index - 1] || '';
+                      
+                      return (
+                        <div key={index} className="space-y-2">
+                          <label className="block text-xs font-medium text-gray-600">
+                            详情图 {index}
+                          </label>
+                          <ImageUpload
+                            value={currentImage}
+                            onChange={(value) => {
+                              const newDetailImages = [...(formData.detailImages || [])];
+                              newDetailImages[index - 1] = value;
+                              setFormData({ ...formData, detailImages: newDetailImages });
+                            }}
+                            folder="details"
+                            filename={formData.productSn ? `desc_${formData.productSn.replace(/[^0-9]/g, '')}_${String(index).padStart(2, '0')}` : undefined}
+                            disabled={!formData.productSn}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* 标签 */}
