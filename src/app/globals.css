@@ -201,6 +201,38 @@
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
+
+  /* ========================================
+     🎨 黏土拟态 (Claymorphism) 阴影系统
+     Source: 云端育儿室设计文档 (d.md)
+     核心原理：深色外阴影 + 浅色外阴影 + 内部高光
+     ======================================== */
+  
+  /* 卡片黏土阴影 - 浮起效果 */
+  .shadow-clay-card {
+    box-shadow: 20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff;
+  }
+  
+  /* 输入框黏土阴影 - 凹陷效果 */
+  .shadow-clay-input {
+    box-shadow: inset 6px 6px 12px #e2e2e2, inset -6px -6px 12px #ffffff;
+  }
+  
+  /* 按钮黏土阴影 - 柔和凸起 */
+  .shadow-clay-btn {
+    box-shadow: 8px 8px 16px #eab6b9, -8px -8px 16px #ffdced;
+  }
+  
+  /* 按钮悬停黏土阴影 - 增强凸起 */
+  .shadow-clay-btn-hover {
+    box-shadow: 12px 12px 24px #eab6b9, -12px -12px 24px #ffdced;
+  }
+  
+  /* 柔和的内阴影 - 用于错误提示等 */
+  .shadow-clay-soft {
+    box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.05), 
+                inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+  }
 }
 
 /* ========================================
