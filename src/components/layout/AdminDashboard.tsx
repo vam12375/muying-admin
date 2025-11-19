@@ -17,7 +17,8 @@ import {
   PointsView,
   MessagesView,
   LogisticsView,
-  UsersView
+  UsersView,
+  ProductImagesView
 } from '@/views';
 import { PointsProductsView } from '@/views/points/products/PointsProductsView';
 import { PointsRulesView } from '@/views/points/rules/PointsRulesView';
@@ -97,6 +98,7 @@ export function AdminDashboard() {
       'product-list': 'product-list',
       'product-category': 'product-category',
       'brand-management': 'brand-management',
+      'product-images': 'product-images',
       'product-analytics': 'product-analytics',
       'reviews': 'reviews',
       'orders': 'orders',
@@ -209,6 +211,11 @@ export function AdminDashboard() {
             {selectedView === 'brand-management' && (
               <motion.div key="brand-management" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <BrandsView />
+              </motion.div>
+            )}
+            {selectedView === 'product-images' && (
+              <motion.div key="product-images" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <ProductImagesView />
               </motion.div>
             )}
             {selectedView === 'product-analytics' && (

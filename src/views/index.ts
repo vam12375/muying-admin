@@ -11,6 +11,7 @@ export { OverviewViewEnhanced } from './dashboard/OverviewViewEnhanced';
 export { ProductsView } from './products/ProductsView';
 export { BrandsView } from './products/BrandsView';
 export { CategoriesView } from './products/CategoriesView';
+export { ProductImagesView } from './products/ProductImagesView';
 
 // 订单管理
 export { OrdersView } from './orders/OrdersView';
