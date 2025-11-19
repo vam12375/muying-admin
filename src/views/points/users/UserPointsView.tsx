@@ -1,20 +1,18 @@
+'use client';
+
 /**
- * 积分管理视图 - 现代卡片式设计
- * Points Management View - Modern Card Design
+ * 用户积分管理视图 - 现代卡片式设计
+ * User Points Management View - Modern Card Design
  * 
- * 功能：卡片式布局、用户头像、GSAP动画
+ * 功能：卡片式布局、用户头像、筛选功能、调整积分、历史记录
  * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
  */
-
-'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-// 注意：此组件已被新的独立子菜单页面替代
-// import { getUserPointsPage, togglePointsStatus, getPointsStatistics } from '@/lib/api/points';
 import { showSuccess, showError } from '@/lib/utils/toast';
 import {
   Search,
@@ -24,91 +22,90 @@ import {
   Users,
   Award,
   Activity,
-  Lock,
-  Unlock,
-  History,
   Settings,
-  Sparkles,
-  Filter,
-  ChevronDown,
+  History,
   Star,
   Mail,
   Phone,
-  Calendar
+  Filter,
+  ChevronDown,
 } from 'lucide-react';
-import { AdjustPointsModal } from './AdjustPointsModal';
-import { PointsHistoryModal } from './PointsHistoryModal';
-import type { UserPoints, PointsStatistics as PointsStats } from '@/types/points';
-import { useGSAPPointsAnimations } from './hooks/useGSAPPointsAnimations';
+import { getUserPointsList } from '@/lib/api/points';
+import type { UserPoints } from '@/types/points';
+import { AdjustPointsModal } from '../AdjustPointsModal';
+import { PointsHistoryModal } from '../PointsHistoryModal';
+import { LevelBadge } from '@/components/LevelBadge';
 
 const AVATAR_BASE_URL = 'http://localhost:5173/avatars';
 
-export function PointsViewEnhanced() {
+export function UserPointsView() {
   const [loading, setLoading] = useState(false);
   const [userPointsList, setUserPointsList] = useState<UserPoints[]>([]);
-  const [statistics, setStatistics] = useState<PointsStats | null>(null);
+  const [statistics, setStatistics] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalEarned: 0,
+    totalSpent: 0,
+  });
+  
+  const [keyword, setKeyword] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  
   const [pagination, setPagination] = useState({
     current: 1,
     size: 12,
-    total: 0
+    total: 0,
   });
-
-  const [keyword, setKeyword] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [showFilters, setShowFilters] = useState(false);
 
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedUserPoints, setSelectedUserPoints] = useState<UserPoints | null>(null);
 
-  // 头像加载重试次数记录（userId -> 重试次数）
+  // 头像加载重试次数记录
   const avatarRetryCount = useRef<Map<number, number>>(new Map());
 
-  const statsCardsRef = useRef<HTMLDivElement>(null);
-  const userCardsRef = useRef<HTMLDivElement>(null);
-  const searchBarRef = useRef<HTMLDivElement>(null);
-
-  const { animateStatsCards, animateUserCards, animateRefresh, animateSearch } = useGSAPPointsAnimations({
-    statsCardsRef,
-    userCardsRef,
-    searchBarRef
-  });
-
   useEffect(() => {
-    // 清空头像重试计数
     avatarRetryCount.current.clear();
     loadUserPoints();
-    loadStatistics();
-  }, [pagination.current, statusFilter]);
+  }, [pagination.current]);
 
   useEffect(() => {
-    if (statistics) {
-      animateStatsCards();
-    }
-  }, [statistics]);
+    // 计算统计数据
+    const totalEarned = userPointsList.reduce((sum, user) => sum + (user.totalEarned || 0), 0);
+    const totalSpent = userPointsList.reduce((sum, user) => sum + (user.totalSpent || user.totalUsed || 0), 0);
+    const activeUsers = userPointsList.filter(user => (user.points || 0) > 0).length;
 
-  useEffect(() => {
-    if (userPointsList.length > 0) {
-      animateUserCards();
-    }
-  }, [userPointsList]);
+    setStatistics({
+      totalUsers: pagination.total,
+      activeUsers,
+      totalEarned,
+      totalSpent,
+    });
+  }, [userPointsList, pagination.total]);
 
   const loadUserPoints = async () => {
     setLoading(true);
     try {
-      const data = await getUserPointsPage({
+      const response = await getUserPointsList({
         page: pagination.current,
         size: pagination.size,
-        keyword: keyword.trim() || undefined,
-        status: statusFilter === 'all' ? undefined : Number(statusFilter)
+        userId: keyword ? Number(keyword) : undefined,
       });
 
-      if (data) {
-        setUserPointsList(data.records);
+      if (response.success && response.data) {
+        const records = response.data.records || [];
+        
+        // 调试日志：查看返回的数据结构
+        console.log('用户积分列表数据:', records);
+        if (records.length > 0) {
+          console.log('第一个用户数据示例:', records[0]);
+        }
+        
+        setUserPointsList(records);
         setPagination({
-          current: data.current,
-          size: data.size,
-          total: data.total
+          current: response.data.current || pagination.current,
+          size: response.data.size || pagination.size,
+          total: response.data.total || 0,
         });
       }
     } catch (error: any) {
@@ -118,41 +115,13 @@ export function PointsViewEnhanced() {
     }
   };
 
-  const loadStatistics = async () => {
-    try {
-      const data = await getPointsStatistics();
-      if (data) {
-        setStatistics(data);
-      }
-    } catch (error: any) {
-      console.error('加载统计信息失败:', error);
-    }
-  };
-
   const handleSearch = () => {
-    animateSearch();
     setPagination({ ...pagination, current: 1 });
-    setTimeout(() => loadUserPoints(), 300);
+    setTimeout(() => loadUserPoints(), 100);
   };
 
   const handleRefresh = () => {
-    animateRefresh();
     loadUserPoints();
-    loadStatistics();
-  };
-
-  const handleToggleStatus = async (userPoints: UserPoints) => {
-    const currentStatus = userPoints.status ?? userPoints.user?.status ?? 1;
-    const newStatus = currentStatus === 1 ? 0 : 1;
-    const action = newStatus === 1 ? '解冻' : '冻结';
-
-    try {
-      await togglePointsStatus(userPoints.userId, newStatus, `管理员${action}积分账户`);
-      showSuccess(`${action}成功`);
-      loadUserPoints();
-    } catch (error: any) {
-      showError(error.response?.data?.message || `${action}失败`);
-    }
   };
 
   const handleAdjustPoints = (userPoints: UserPoints) => {
@@ -177,15 +146,15 @@ export function PointsViewEnhanced() {
   const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement>, userId: number) => {
     const currentRetries = avatarRetryCount.current.get(userId) || 0;
     
-    // 如果重试次数小于3次，尝试加载默认头像
     if (currentRetries < 3) {
       avatarRetryCount.current.set(userId, currentRetries + 1);
       e.currentTarget.src = `${AVATAR_BASE_URL}/default.jpg`;
     } else {
-      // 超过3次后，不再重试，使用一个占位符或者移除src
       e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23e2e8f0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%2394a3b8"%3E?%3C/text%3E%3C/svg%3E';
     }
   };
+
+
 
   return (
     <div className="space-y-6">
@@ -201,59 +170,59 @@ export function PointsViewEnhanced() {
         </Button>
       </div>
 
-      {/* 统计卡片 - 参考优惠券管理样式 */}
-      <div ref={statsCardsRef} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+      {/* 统计卡片 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
           <CardContent className="p-6">
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-3">
               <Users className="h-6 w-6 text-white" />
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">总用户数</p>
-            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.totalUsers || 0}>
-              0
+            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">
+              {statistics.totalUsers}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+        <Card className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
           <CardContent className="p-6">
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-3">
               <Activity className="h-6 w-6 text-white" />
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">活跃用户</p>
-            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.activeUsers || 0}>
-              0
+            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">
+              {statistics.activeUsers}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+        <Card className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
           <CardContent className="p-6">
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-3">
               <Award className="h-6 w-6 text-white" />
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">累计发放</p>
-            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.totalEarned || 0}>
-              0
+            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">
+              {statistics.totalEarned}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="stat-card bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+        <Card className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
           <CardContent className="p-6">
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-3">
               <TrendingDown className="h-6 w-6 text-white" />
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">累计消费</p>
-            <p className="stat-value text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1" data-target={statistics?.totalSpent || 0}>
-              0
+            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">
+              {statistics.totalSpent}
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* 搜索栏 */}
-      <Card ref={searchBarRef} className="border-0 shadow-lg">
+      <Card className="border-0 shadow-lg">
         <CardContent className="p-4">
           <div className="flex gap-3">
             <div className="relative flex-1">
@@ -282,22 +251,23 @@ export function PointsViewEnhanced() {
 
           {showFilters && (
             <div className="flex gap-3 mt-3">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setKeyword('');
+                  setPagination({ ...pagination, current: 1 });
+                }}
               >
-                <option value="all">全部状态</option>
-                <option value="1">正常</option>
-                <option value="0">冻结</option>
-              </select>
+                重置筛选
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* 用户卡片网格 */}
-      <div ref={userCardsRef}>
+      <div>
         {loading ? (
           <div className="text-center py-20">
             <RefreshCw className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
@@ -313,7 +283,7 @@ export function PointsViewEnhanced() {
             {userPointsList.map((userPoints) => (
               <Card
                 key={userPoints.id || userPoints.pointsId}
-                className="user-card border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group opacity-0"
+                className="border-0 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group"
               >
                 {/* 顶部渐变条 */}
                 <div className="h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
@@ -328,9 +298,7 @@ export function PointsViewEnhanced() {
                         className="w-16 h-16 rounded-full object-cover ring-4 ring-white shadow-lg"
                         onError={(e) => handleAvatarError(e, userPoints.userId)}
                       />
-                      <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${
-                        (userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? 'bg-green-500' : 'bg-red-500'
-                      }`} />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white bg-green-500" />
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -342,24 +310,35 @@ export function PointsViewEnhanced() {
                           {userPoints.nickname || userPoints.user?.nickname}
                         </p>
                       )}
-                      <Badge
-                        variant={(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? 'default' : 'destructive'}
-                        className="mt-2"
-                      >
-                        {(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? '正常' : '禁用'}
-                      </Badge>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge
+                          variant={userPoints.status === 1 ? 'default' : 'destructive'}
+                          className={
+                            userPoints.status === 1
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200 border-green-200'
+                              : 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200'
+                          }
+                        >
+                          {userPoints.status === 1 ? '正常' : '禁用'}
+                        </Badge>
+                        <LevelBadge level={userPoints.level} />
+                      </div>
                     </div>
                   </div>
 
                   {/* 联系信息 */}
                   <div className="space-y-2 mb-6 text-sm">
                     <div className="flex items-center gap-2 text-slate-600">
-                      <Mail className="h-4 w-4" />
-                      <span className="truncate">{(userPoints.email || userPoints.user?.email) || '-'}</span>
+                      <Mail className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">
+                        {userPoints.email || userPoints.user?.email || '未设置邮箱'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-slate-600">
-                      <Phone className="h-4 w-4" />
-                      <span>{(userPoints.phone || userPoints.user?.phone) || '-'}</span>
+                      <Phone className="h-4 w-4 flex-shrink-0" />
+                      <span>
+                        {userPoints.phone || userPoints.user?.phone || '未设置手机'}
+                      </span>
                     </div>
                   </div>
 
@@ -407,24 +386,6 @@ export function PointsViewEnhanced() {
                     >
                       <History className="h-4 w-4 mr-1" />
                       历史
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? 'destructive' : 'default'}
-                      onClick={() => handleToggleStatus(userPoints)}
-                      className="w-full col-span-2"
-                    >
-                      {(userPoints.status ?? userPoints.user?.status ?? 1) === 1 ? (
-                        <>
-                          <Lock className="h-4 w-4 mr-1" />
-                          冻结
-                        </>
-                      ) : (
-                        <>
-                          <Unlock className="h-4 w-4 mr-1" />
-                          解冻
-                        </>
-                      )}
                     </Button>
                   </div>
                 </CardContent>
@@ -475,7 +436,6 @@ export function PointsViewEnhanced() {
         userPoints={selectedUserPoints}
         onSuccess={() => {
           loadUserPoints();
-          loadStatistics();
         }}
       />
 

@@ -22,9 +22,13 @@ interface PointsHistoryModalProps {
   userPoints: UserPoints | null;
 }
 
+import { showSuccess, showError } from '@/lib/utils/toast';
+
 const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-  if (typeof window !== 'undefined') {
-    console.log(`[${type.toUpperCase()}]`, message);
+  if (type === 'success') {
+    showSuccess(message);
+  } else {
+    showError(message);
   }
 };
 
@@ -48,26 +52,44 @@ export function PointsHistoryModal({ open, onClose, userPoints }: PointsHistoryM
 
     setLoading(true);
     try {
-      const data = await getPointsTransactionPage({
+      const response = await getPointsTransactionPage({
         userId: userPoints.userId,
         page: pagination.current,
         size: pagination.size
       });
 
-      if (data) {
-        setTransactions(data.records);
-        setPagination({
-          current: data.current,
-          size: data.size,
-          total: data.total
-        });
+      console.log('交易记录API响应:', response);
+
+      // 处理响应数据
+      if (response && response.success !== false) {
+        // 如果有 data 属性，使用 data
+        const data = response.data || response;
+        
+        console.log('交易记录数据:', data);
+        
+        if (data.records) {
+          setTransactions(data.records);
+          setPagination({
+            current: data.current || pagination.current,
+            size: data.size || pagination.size,
+            total: data.total || 0
+          });
+        } else {
+          // 如果没有 records，可能直接返回了数组
+          setTransactions([]);
+          setPagination({
+            current: 1,
+            size: pagination.size,
+            total: 0
+          });
+        }
+      } else {
+        showToast('加载交易记录失败', 'error');
       }
     } catch (error: any) {
-      showToast(error.response?.data?.message || '加载交易记录失败', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
+      console.error('加载交易记录失败:', error);
+      showToast(error.message || '加载交易记录失败', 'error');
+    } final
 
   // 获取类型标签（支持字符串和数字类型）
   const getTypeLabel = (type: string | number) => {
@@ -179,15 +201,15 @@ export function PointsHistoryModal({ open, onClose, userPoints }: PointsHistoryM
         <div className="grid grid-cols-3 gap-4 p-6 bg-gray-50">
           <div>
             <div className="text-sm text-gray-600">当前积分</div>
-            <div className="text-2xl font-bold">{userPoints.currentPoints}</div>
+            <div className="text-2xl font-bold">{userPoints.currentPoints || userPoints.points || 0}</div>
           </div>
           <div>
             <div className="text-sm text-gray-600">累计获得</div>
-            <div className="text-2xl font-bold text-green-600">{userPoints.totalEarned}</div>
+            <div className="text-2xl font-bold text-green-600">{userPoints.totalEarned || 0}</div>
           </div>
           <div>
             <div className="text-sm text-gray-600">累计消费</div>
-            <div className="text-2xl font-bold text-orange-600">{userPoints.totalSpent}</div>
+            <div className="text-2xl font-bold text-orange-600">{userPoints.totalSpent || userPoints.totalUsed || 0}</div>
           </div>
         </div>
 

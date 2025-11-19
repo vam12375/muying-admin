@@ -19,6 +19,10 @@ import {
   LogisticsView,
   UsersView
 } from '@/views';
+import { PointsProductsView } from '@/views/points/products/PointsProductsView';
+import { PointsRulesView } from '@/views/points/rules/PointsRulesView';
+import { UserPointsView } from '@/views/points/users/UserPointsView';
+import { ExchangesView } from '@/views/points/exchanges/ExchangesView';
 import RedisView from '@/views/settings/RedisView';
 import { SystemMonitorViewEnhanced } from '@/views/monitor/SystemMonitorViewEnhanced';
 import { ProfileView } from '@/views/profile/ProfileView';
@@ -101,6 +105,10 @@ export function AdminDashboard() {
       'users': 'customers', // 用户管理映射到customers视图
       'coupons': 'coupons',
       'points': 'points',
+      'points-products': 'points-products',
+      'points-rules': 'points-rules',
+      'points-users': 'points-users',
+      'points-exchanges': 'points-exchanges',
       'messages': 'messages',
       'logistics': 'logistics',
       'profile': 'profile',
@@ -239,6 +247,26 @@ export function AdminDashboard() {
             {selectedView === 'points' && (
               <motion.div key="points" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 <PointsView />
+              </motion.div>
+            )}
+            {selectedView === 'points-products' && (
+              <motion.div key="points-products" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <PointsProductsView />
+              </motion.div>
+            )}
+            {selectedView === 'points-rules' && (
+              <motion.div key="points-rules" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <PointsRulesView />
+              </motion.div>
+            )}
+            {selectedView === 'points-users' && (
+              <motion.div key="points-users" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <UserPointsView />
+              </motion.div>
+            )}
+            {selectedView === 'points-exchanges' && (
+              <motion.div key="points-exchanges" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                <ExchangesView />
               </motion.div>
             )}
             {selectedView === 'messages' && (

@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { pointsApi } from '@/lib/api/points';
+import { shipExchange } from '@/lib/api/points';
 import { showSuccess, showError } from '@/lib/utils/toast';
 import { X } from 'lucide-react';
 import type { PointsExchange } from '@/types/points';
@@ -47,17 +47,22 @@ export function ShipExchangeModal({ open, onClose, exchange, onSuccess }: ShipEx
 
     setLoading(true);
     try {
-      await pointsApi.shipExchange(exchange.id, {
+      const response = await shipExchange(exchange.id, {
         logisticsCompany: formData.logisticsCompany.trim(),
         trackingNumber: formData.trackingNumber.trim(),
         shipRemark: formData.shipRemark.trim() || undefined
       });
 
-      showSuccess('发货成功');
-      onSuccess();
-      onClose();
-      setFormData({ logisticsCompany: '', trackingNumber: '', shipRemark: '' });
+      if (response.success) {
+        showSuccess('发货成功');
+        onSuccess();
+        onClose();
+        setFormData({ logisticsCompany: '', trackingNumber: '', shipRemark: '' });
+      } else {
+        showError(response.message || '发货失败');
+      }
     } catch (error: any) {
+      console.error('发货失败:', error);
       showError(error.response?.data?.message || '发货失败');
     } finally {
       setLoading(false);

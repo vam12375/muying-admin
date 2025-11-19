@@ -25,9 +25,13 @@ interface AdjustPointsModalProps {
   onSuccess: () => void;
 }
 
+import { showSuccess, showError } from '@/lib/utils/toast';
+
 const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-  if (typeof window !== 'undefined') {
-    console.log(`[${type.toUpperCase()}]`, message);
+  if (type === 'success') {
+    showSuccess(message);
+  } else {
+    showError(message);
   }
 };
 
@@ -56,18 +60,28 @@ export function AdjustPointsModal({ open, onClose, userPoints, onSuccess }: Adju
 
     setLoading(true);
     try {
-      await adjustUserPoints({
+      console.log('调整积分请求:', {
         userId: userPoints.userId,
         points: adjustType === 'add' ? pointsNum : -pointsNum,
         reason: reason.trim(),
         source: source.trim()
       });
 
+      const response = await adjustUserPoints({
+        userId: userPoints.userId,
+        points: adjustType === 'add' ? pointsNum : -pointsNum,
+        reason: reason.trim(),
+        source: source.trim()
+      });
+
+      console.log('调整积分响应:', response);
+
       showToast('积分调整成功', 'success');
       onSuccess();
       handleClose();
     } catch (error: any) {
-      showToast(error.response?.data?.message || '积分调整失败', 'error');
+      console.error('调整积分失败:', error);
+      showToast(error.response?.data?.message || error.message || '积分调整失败', 'error');
     } finally {
       setLoading(false);
     }
@@ -101,11 +115,11 @@ export function AdjustPointsModal({ open, onClose, userPoints, onSuccess }: Adju
           <div className="rounded-lg bg-gray-50 p-4 space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">用户名：</span>
-              <span className="text-sm font-medium">{userPoints.username}</span>
+              <span className="text-sm font-medium">{userPoints.username || userPoints.user?.username || `用户${userPoints.userId}`}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">当前积分：</span>
-              <span className="text-sm font-medium">{userPoints.currentPoints}</span>
+              <span className="text-sm font-medium">{userPoints.currentPoints || userPoints.points || 0}</span>
             </div>
           </div>
 
@@ -169,8 +183,8 @@ export function AdjustPointsModal({ open, onClose, userPoints, onSuccess }: Adju
                 调整后积分：
                 <span className="ml-2 font-bold">
                   {adjustType === 'add'
-                    ? userPoints.currentPoints + Number(points)
-                    : userPoints.currentPoints - Number(points)}
+                    ? (userPoints.currentPoints || userPoints.points || 0) + Number(points)
+                    : (userPoints.currentPoints || userPoints.points || 0) - Number(points)}
                 </span>
               </div>
             </div>

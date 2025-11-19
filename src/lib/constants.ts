@@ -75,8 +75,13 @@ export const navigationItems: NavigationItem[] = [
   { 
     id: "points", 
     name: "积分管理", 
-    icon: Award, 
-    href: "/points" 
+    icon: Award,
+    children: [
+      { id: "points-products", name: "积分商品", icon: Package, href: "/points/products" },
+      { id: "points-rules", name: "积分规则", icon: FileText, href: "/points/rules" },
+      { id: "points-users", name: "用户积分", icon: Users, href: "/points/users" },
+      { id: "points-exchanges", name: "兑换记录", icon: ShoppingCart, href: "/points/exchanges" },
+    ]
   },
   { 
     id: "messages", 

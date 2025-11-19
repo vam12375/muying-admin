@@ -23,7 +23,7 @@ export { ReviewsViewEnhanced } from './reviews/ReviewsViewEnhanced';
 export { CouponsView } from './coupons/CouponsView';
 
 // 积分管理
-export { PointsViewEnhanced as PointsView } from './points/PointsViewEnhanced';
+export { PointsViewPlaceholder as PointsView } from './points/PointsViewPlaceholder';
 
 // 消息管理
 export { MessagesViewEnhanced as MessagesView } from './messages/MessagesViewEnhanced';
