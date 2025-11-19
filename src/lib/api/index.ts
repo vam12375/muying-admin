@@ -132,7 +132,7 @@ export async function fetchApi<T>(
     let result: any;
     try {
       const text = await response.text();
-      console.log('[API Response Text]', text);
+      //console.log('[API Response Text]', text);
       result = text ? JSON.parse(text) : {};
     } catch (parseError) {
       console.error('[API Parse Error]', parseError);

@@ -32,6 +32,7 @@ import {
   BarChart3,
   Image as ImageIcon,
 } from "lucide-react";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { reviewsApi } from "@/lib/api/reviews";
@@ -484,7 +485,15 @@ export function ReviewsViewEnhanced() {
                             whileHover={{ scale: 1.1 }}
                             className="w-20 h-20 rounded-lg overflow-hidden border-2 border-slate-200 dark:border-slate-700"
                           >
-                            <img src={img} alt="" className="w-full h-full object-cover" />
+                            <OptimizedImage 
+                              src={img} 
+                              alt="" 
+                              className="w-full h-full object-cover"
+                              folder="products"
+                              width={80}
+                              height={80}
+                              lazy={true}
+                            />
                           </motion.div>
                         ))}
                       </div>

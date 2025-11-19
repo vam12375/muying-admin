@@ -67,15 +67,30 @@ export function Sidebar({
         width: isCollapsed ? 112 : 288
       }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="fixed top-0 left-0 h-full bg-white border-r border-slate-200 z-40 flex flex-col md:translate-x-0 md:static md:z-auto dark:bg-slate-800 dark:border-slate-700"
+      className="fixed top-4 left-4 h-[calc(100vh-2rem)] glass rounded-3xl shadow-glow-pink z-40 flex flex-col md:translate-x-0 md:static md:z-auto dark:glass-dark overflow-hidden"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/60 dark:bg-slate-900/30 dark:border-slate-700">
+      {/* Header - 去掉紫色底色，使用呼吸动效 */}
+      <div className="flex items-center justify-between p-5 border-b border-pink-100/50 dark:border-pink-900/20">
         {!isCollapsed && (
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+            <motion.div 
+              className="w-9 h-9 bg-gradient-to-br from-pink-400 to-rose-400 rounded-2xl flex items-center justify-center shadow-glow-pink"
+              animate={{ 
+                scale: [1, 1.05, 1],
+                boxShadow: [
+                  '0 8px 32px rgba(255, 182, 193, 0.3)',
+                  '0 8px 40px rgba(255, 182, 193, 0.5)',
+                  '0 8px 32px rgba(255, 182, 193, 0.3)'
+                ]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
               <Baby className="text-white h-5 w-5" />
-            </div>
+            </motion.div>
             <div className="flex flex-col">
               <span className="font-semibold text-slate-800 text-base dark:text-slate-100">母婴商城</span>
               <span className="text-xs text-slate-500 dark:text-slate-400">后台管理系统</span>
@@ -83,13 +98,28 @@ export function Sidebar({
           </div>
         )}
         {isCollapsed && (
-          <div className="w-9 h-9 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto shadow-sm">
+          <motion.div 
+            className="w-9 h-9 bg-gradient-to-br from-pink-400 to-rose-400 rounded-2xl flex items-center justify-center mx-auto shadow-glow-pink"
+            animate={{ 
+              scale: [1, 1.05, 1],
+              boxShadow: [
+                '0 8px 32px rgba(255, 182, 193, 0.3)',
+                '0 8px 40px rgba(255, 182, 193, 0.5)',
+                '0 8px 32px rgba(255, 182, 193, 0.3)'
+              ]
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
             <Baby className="text-white h-5 w-5" />
-          </div>
+          </motion.div>
         )}
         <button
           onClick={onToggleCollapse}
-          className="hidden md:flex p-1.5 rounded-md hover:bg-slate-100 transition-all duration-200 dark:hover:bg-slate-700"
+          className="hidden md:flex p-1.5 rounded-full hover:bg-pink-50 transition-all duration-200 dark:hover:bg-pink-900/20"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
@@ -100,17 +130,17 @@ export function Sidebar({
         </button>
       </div>
 
-      {/* Search Bar */}
+      {/* Search Bar - Pill shape */}
       {!isCollapsed && (
         <div className="px-4 py-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-pink-400" />
             <input
               type="text"
               placeholder="搜索..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-100"
+              className="w-full pl-9 pr-4 py-2 bg-pink-50/50 border border-pink-100 rounded-full text-sm placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 dark:bg-pink-900/20 dark:border-pink-800/30 dark:text-slate-100"
             />
           </div>
         </div>
@@ -135,17 +165,25 @@ export function Sidebar({
                       onItemClick(item.id);
                     }
                   }}
-                  className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-md text-left transition-all duration-200 group
+                  className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-full text-left transition-all duration-200 group relative
                     ${isActive
-                      ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700"}
+                      ? "bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400"
+                      : "text-slate-600 hover:bg-pink-50/50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-pink-900/10"}
                     ${isCollapsed ? "justify-center px-2" : ""}`}
                   title={isCollapsed ? item.name : undefined}
                 >
+                  {/* 小圆点指示器 - 仅在激活时显示 */}
+                  {isActive && !isCollapsed && (
+                    <motion.div
+                      initial={{ scale: 0, x: -10 }}
+                      animate={{ scale: 1, x: 0 }}
+                      className="absolute left-0 w-1.5 h-1.5 bg-pink-500 rounded-full"
+                    />
+                  )}
                   <div className="flex items-center justify-center min-w-[24px]">
                     <Icon
-                      className={`h-4.5 w-4.5 flex-shrink-0
-                        ${isActive ? "text-white" : "text-slate-500 group-hover:text-slate-700 dark:text-slate-400"}`}
+                      className={`h-4.5 w-4.5 flex-shrink-0 transition-colors
+                        ${isActive ? "text-pink-600 dark:text-pink-400" : "text-slate-500 group-hover:text-pink-500 dark:text-slate-400"}`}
                     />
                   </div>
                   {!isCollapsed && (
@@ -157,8 +195,8 @@ export function Sidebar({
                         {item.badge && (
                           <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full
                             ${isActive
-                              ? "bg-white/20 text-white"
-                              : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"}`}
+                              ? "bg-pink-500 text-white"
+                              : "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"}`}
                           >
                             {item.badge}
                           </span>
@@ -219,27 +257,50 @@ export function Sidebar({
         </ul>
       </nav>
 
-      {/* Bottom Profile Section */}
-      <div className="mt-auto border-t border-slate-200 dark:border-slate-700">
-        <div className={`border-b border-slate-200 bg-slate-50/30 dark:bg-slate-900/30 dark:border-slate-700 ${isCollapsed ? 'py-3 px-2' : 'p-3'}`}>
+      {/* Bottom Profile Section - 圆润设计 */}
+      <div className="mt-auto border-t border-pink-100/50 dark:border-pink-900/20">
+        <div className={`border-b border-pink-100/50 bg-pink-50/30 dark:bg-pink-900/10 dark:border-pink-900/20 ${isCollapsed ? 'py-3 px-2' : 'p-3'}`}>
           {!isCollapsed ? (
-            <div className="flex items-center px-3 py-2 rounded-md bg-white hover:bg-slate-50 transition-colors duration-200 dark:bg-slate-800 dark:hover:bg-slate-700">
-              <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+            <div className="flex items-center px-3 py-2 rounded-2xl bg-white/50 hover:bg-pink-50 transition-colors duration-200 dark:bg-slate-800/50 dark:hover:bg-pink-900/20">
+              <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center shadow-sm">
                 <span className="text-white font-medium text-sm">AD</span>
               </div>
               <div className="flex-1 min-w-0 ml-2.5">
                 <p className="text-sm font-medium text-slate-800 truncate dark:text-slate-100">Admin User</p>
                 <p className="text-xs text-slate-500 truncate dark:text-slate-400">admin@mombaby.com</p>
               </div>
-              <div className="w-2 h-2 bg-green-500 rounded-full ml-2" title="Online" />
+              <motion.div 
+                className="w-2 h-2 bg-green-400 rounded-full ml-2" 
+                title="Online"
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [1, 0.8, 1]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
             </div>
           ) : (
             <div className="flex justify-center">
               <div className="relative">
-                <div className="w-9 h-9 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+                <div className="w-9 h-9 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center shadow-sm">
                   <span className="text-white font-medium text-sm">AD</span>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-800" />
+                <motion.div 
+                  className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-slate-800"
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [1, 0.8, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
               </div>
             </div>
           )}
@@ -247,7 +308,7 @@ export function Sidebar({
         <div className="p-3">
           <button
             onClick={() => onItemClick("logout")}
-            className={`w-full flex items-center rounded-md text-left transition-all duration-200 group text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20
+            className={`w-full flex items-center rounded-full text-left transition-all duration-200 group text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20
               ${isCollapsed ? "justify-center p-2.5" : "space-x-2.5 px-3 py-2.5"}`}
             title={isCollapsed ? "退出登录" : undefined}
           >

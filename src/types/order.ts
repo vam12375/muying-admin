@@ -35,10 +35,11 @@ export interface OrderProduct {
   id: number;
   productId: number;
   productName: string;
-  productImage: string;
+  productImg: string;  // 后端返回的字段名
+  productImage?: string;  // 兼容旧字段名
   price: number;
   quantity: number;
-  subtotal: number;
+  subtotal?: number;  // 可选，因为可能需要前端计算
   attributes?: string;
   specs?: string;
 }

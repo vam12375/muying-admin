@@ -23,6 +23,8 @@ import {
   Filter,
   TrendingUp,
   BarChart3,
+} from "lucide-react";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
   Sparkles,
   Award,
   ThumbsUp,
@@ -591,7 +593,15 @@ export function ReviewsViewGSAP() {
                           key={idx}
                           className="w-24 h-24 rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:scale-110 transition-transform cursor-pointer"
                         >
-                          <img src={img} alt="" className="w-full h-full object-cover" />
+                          <OptimizedImage 
+                            src={img} 
+                            alt="" 
+                            className="w-full h-full object-cover"
+                            folder="products"
+                            width={96}
+                            height={96}
+                            lazy={true}
+                          />
                         </div>
                       ))}
                     </div>

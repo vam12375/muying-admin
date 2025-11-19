@@ -9,11 +9,12 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Upload } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import type { Product, ProductFormData } from '@/types/product';
 import type { Brand } from '@/types/brand';
 import type { Category } from '@/types/category';
 import { showError } from '@/lib/utils/toast';
+import { ImageUpload } from '@/components/common/ImageUpload';
 
 interface ProductEditModalProps {
   product: Product | null;
@@ -54,19 +55,19 @@ export function ProductEditModal({
   useEffect(() => {
     if (product) {
       setFormData({
-        categoryId: product.categoryId,
-        brandId: product.brandId,
-        productName: product.productName,
-        productSn: product.productSn,
-        productImg: product.productImg,
-        productDetail: product.productDetail,
-        priceNew: product.priceNew,
-        priceOld: product.priceOld,
-        stock: product.stock,
-        productStatus: product.productStatus,
-        isHot: product.isHot,
-        isNew: product.isNew,
-        isRecommend: product.isRecommend,
+        categoryId: product.categoryId || 0,
+        brandId: product.brandId || 0,
+        productName: product.productName || '',
+        productSn: product.productSn || '',
+        productImg: product.productImg || '',
+        productDetail: product.productDetail || '',
+        priceNew: product.priceNew || 0,
+        priceOld: product.priceOld || 0,
+        stock: product.stock || 0,
+        productStatus: product.productStatus || '上架',
+        isHot: product.isHot || 0,
+        isNew: product.isNew || 0,
+        isRecommend: product.isRecommend || 0,
         images: product.images || undefined,
         specsList: product.specsList || undefined,
       });
@@ -95,14 +96,14 @@ export function ProductEditModal({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.productName.trim()) {
+    if (!formData.productName || !formData.productName.trim()) {
       newErrors.productName = '请输入商品名称';
     }
-    if (!formData.productSn.trim()) {
+    if (!formData.productSn || !formData.productSn.trim()) {
       newErrors.productSn = '请输入商品编号';
     }
-    if (!formData.productImg.trim()) {
-      newErrors.productImg = '请输入商品图片URL';
+    if (!formData.productImg || !String(formData.productImg).trim()) {
+      newErrors.productImg = '请上传商品图片';
     }
     if (formData.categoryId === 0) {
       newErrors.categoryId = '请选择分类';
@@ -338,24 +339,19 @@ export function ProductEditModal({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     商品图片 *
                   </label>
-                  <input
-                    type="text"
+                  <ImageUpload
                     value={formData.productImg}
-                    onChange={(e) => setFormData({ ...formData, productImg: e.target.value })}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.productImg ? 'border-red-500' : 'border-gray-200'
-                    }`}
-                    placeholder="请输入图片URL"
+                    onChange={(value) => setFormData({ ...formData, productImg: value })}
+                    folder="products"
+                    filename={formData.productSn ? `goods${formData.productSn.replace(/[^0-9]/g, '')}` : undefined}
                   />
                   {errors.productImg && (
                     <p className="text-sm text-red-500 mt-1">{errors.productImg}</p>
                   )}
-                  {formData.productImg && (
-                    <img
-                      src={formData.productImg.startsWith('http') ? formData.productImg : `http://localhost:5173/products/${formData.productImg}`}
-                      alt="预览"
-                      className="mt-2 w-32 h-32 object-cover rounded-lg"
-                    />
+                  {formData.productSn && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      图片将命名为: goods{formData.productSn.replace(/[^0-9]/g, '')}.jpg
+                    </p>
                   )}
                 </div>
 

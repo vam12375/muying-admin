@@ -3,6 +3,7 @@
  * Brand Management API
  * 
  * Source: 基于 context7-mcp 和后端 BrandController
+ * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
  */
 
 import { fetchApi } from './index';

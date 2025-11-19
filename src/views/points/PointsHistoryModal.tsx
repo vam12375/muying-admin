@@ -89,7 +89,10 @@ export function PointsHistoryModal({ open, onClose, userPoints }: PointsHistoryM
     } catch (error: any) {
       console.error('加载交易记录失败:', error);
       showToast(error.message || '加载交易记录失败', 'error');
-    } final
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 获取类型标签（支持字符串和数字类型）
   const getTypeLabel = (type: string | number) => {

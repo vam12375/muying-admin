@@ -18,7 +18,7 @@ import { getAllBrands } from '@/lib/api/brands';
 import { getCategoryList } from '@/lib/api/categories';
 import { ProductDetailModal } from '@/components/products/ProductDetailModal';
 import { ProductEditModal } from '@/components/products/ProductEditModal';
-import { getProductImageUrl } from '@/lib/utils/image';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { showSuccess, showError, showWarning } from '@/lib/utils/toast';
 import type { Product, ProductFormData } from '@/types/product';
 import type { Brand } from '@/types/brand';
@@ -398,10 +398,14 @@ export function ProductsView() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={getProductImageUrl(product.productImg)}
+                        <OptimizedImage
+                          src={product.productImg}
                           alt={product.productName}
                           className="w-12 h-12 rounded-lg object-cover"
+                          folder="products"
+                          width={48}
+                          height={48}
+                          lazy={true}
                         />
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">

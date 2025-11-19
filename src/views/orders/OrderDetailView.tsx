@@ -30,6 +30,7 @@ import type { Order, OrderHistory } from '@/types/order';
 import type { Logistics, LogisticsTrack } from '@/types/logistics';
 import { showInfo } from '@/lib/utils/toast';
 import { formatDate, formatPrice } from '@/lib/utils';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 import { toast } from '@/hooks/use-toast';
 
 interface OrderDetailViewProps {
@@ -482,23 +483,63 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
           {order.products && order.products.length > 0 ? (
             <div className="space-y-4">
               {order.products.map((product) => (
-                <div key={product.id} className="flex items-center gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                  <img
-                    src={product.productImage ? (product.productImage.startsWith('http') ? product.productImage : `http://localhost:5173/products/${product.productImage}`) : '/placeholder.png'}
-                    alt={product.productName}
-                    className="h-20 w-20 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">{product.productName}</div>
-                    {product.attributes && (
-                      <div className="mt-1 text-xs text-gray-500">{product.attributes}</div>
+                <div key={product.id} className="flex items-start gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                  {/* 商品图片 */}
+                  <div className="flex-shrink-0">
+                    <OptimizedImage
+                      src={product.productImg || product.productImage}
+                      alt={product.productName}
+                      className="h-24 w-24 rounded-lg object-cover border border-gray-200 bg-gray-50"
+                      folder="products"
+                      width={96}
+                      height={96}
+                      lazy={false}
+                    />
+                  </div>
+                  
+                  {/* 商品详细信息 */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-gray-900 mb-2">{product.productName}</h3>
+                    
+                    {/* 商品规格/属性 */}
+                    {product.specs && (
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {(() => {
+                          try {
+                            const specsObj = typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs;
+                            return Object.entries(specsObj).map(([key, value], index) => (
+                              <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {key}: {String(value)}
+                              </span>
+                            ));
+                          } catch {
+                            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              {product.specs}
+                            </span>;
+                          }
+                        })()}
+                      </div>
                     )}
-                    <div className="mt-1 text-sm text-gray-600">
-                      {formatPrice(product.price)} × {product.quantity}
+                    
+                    {/* 价格和数量信息 */}
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">单价:</span>
+                        <span className="font-medium text-gray-900">{formatPrice(product.price)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">数量:</span>
+                        <span className="font-medium text-gray-900">×{product.quantity}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-sm font-semibold text-gray-900">
-                    {formatPrice(product.subtotal)}
+                  
+                  {/* 小计金额 */}
+                  <div className="flex-shrink-0 text-right">
+                    <div className="text-xs text-gray-500 mb-1">小计</div>
+                    <div className="text-lg font-bold text-red-600">
+                      {formatPrice(product.price * product.quantity)}
+                    </div>
                   </div>
                 </div>
               ))}

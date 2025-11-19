@@ -38,6 +38,7 @@ import {
   ChartTooltipContent,
   ChartConfig,
 } from "@/components/ui/chart";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import {
   LineChart,
   Line,
@@ -112,20 +113,25 @@ const AnimatedStatCard: React.FC<AnimatedStatCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5 }}
+      whileHover={{ y: -4, scale: 1.02 }}
     >
-      <Card className="relative overflow-hidden border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white via-white to-pink-50/20 dark:from-slate-800 dark:via-slate-800 dark:to-pink-900/10 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-transparent to-transparent" />
+      <Card className="relative overflow-hidden border-pink-100 dark:border-pink-900/30 bg-gradient-to-br from-white via-white to-pink-50/30 dark:from-slate-800 dark:via-slate-800 dark:to-pink-900/20 backdrop-blur-sm hover:shadow-glow-pink transition-all duration-300 rounded-3xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-400/5 via-transparent to-transparent" />
         <CardContent className="p-6 relative">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 rounded-xl bg-pink-500/10 backdrop-blur-sm">
+            <motion.div 
+              className="p-4 rounded-3xl bg-gradient-to-br from-pink-400/10 to-rose-400/10 backdrop-blur-sm"
+              whileHover={{ rotate: 5, scale: 1.1 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
               {icon}
-            </div>
+            </motion.div>
             <Badge
               variant="outline"
-              className={`${
+              className={`rounded-full ${
                 isPositive
-                  ? "text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/20"
-                  : "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20"
+                  ? "text-green-600 dark:text-green-400 bg-green-50 border-green-200"
+                  : "text-red-600 dark:text-red-400 bg-red-50 border-red-200"
               } backdrop-blur-sm`}
             >
               {isPositive ? (
@@ -139,7 +145,7 @@ const AnimatedStatCard: React.FC<AnimatedStatCardProps> = ({
           <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{title}</h3>
           <div className="flex items-baseline gap-1">
             <span className="text-sm text-slate-500 dark:text-slate-400">{prefix}</span>
-            <motion.p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            <motion.p className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
               {displayValue}
             </motion.p>
             <span className="text-sm text-slate-500 dark:text-slate-400">{suffix}</span>
@@ -344,21 +350,39 @@ export function OverviewViewEnhanced() {
   } satisfies ChartConfig;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-pink-50/20 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 -m-6 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-rose-50/20 to-amber-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 -m-6 p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
+        {/* Header - 情感化设计 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-2"
+          className="space-y-3"
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-            仪表盘概览
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            欢迎回来！这是您今天的业务数据概览
-          </p>
+          <div className="flex items-center gap-3">
+            <motion.span 
+              className="text-5xl"
+              animate={{ 
+                rotate: [0, 10, -10, 10, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                repeatDelay: 3
+              }}
+            >
+              ☀️
+            </motion.span>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+                Good Morning, Administrator
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                欢迎回来！这是您今天的业务数据概览 🍼
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Stats Grid */}
@@ -381,17 +405,18 @@ export function OverviewViewEnhanced() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Line Chart */}
+          {/* Line Chart - 面积图+渐变填充 */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            whileHover={{ scale: 1.01 }}
           >
-            <Card className="border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white via-white to-pink-50/10 dark:from-slate-800 dark:via-slate-800 dark:to-pink-900/10 backdrop-blur-sm">
+            <Card className="border-pink-100 dark:border-pink-900/30 bg-gradient-to-br from-white via-white to-pink-50/20 dark:from-slate-800 dark:via-slate-800 dark:to-pink-900/20 backdrop-blur-sm rounded-3xl hover:shadow-glow-pink transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>销售趋势</span>
-                  <Badge variant="outline" className="bg-pink-500/10">
+                  <span className="bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">销售趋势</span>
+                  <Badge variant="outline" className="bg-pink-50 border-pink-200 text-pink-600 rounded-full">
                     最近6个月
                   </Badge>
                 </CardTitle>
@@ -400,7 +425,13 @@ export function OverviewViewEnhanced() {
                 {salesTrend.length > 0 ? (
                   <ChartContainer config={lineChartConfig} className="h-[300px]">
                     <LineChart data={salesTrend}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
+                      <defs>
+                        <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(350, 81%, 60%)" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="hsl(350, 81%, 60%)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-pink-100 dark:stroke-pink-900/30" />
                       <XAxis dataKey="month" className="text-xs" />
                       <YAxis className="text-xs" />
                       <ChartTooltip content={<ChartTooltipContent />} />
@@ -408,41 +439,44 @@ export function OverviewViewEnhanced() {
                       <Line
                         type="monotone"
                         dataKey="sales"
-                        stroke="hsl(330, 81%, 60%)"
-                        strokeWidth={2}
-                        dot={{ fill: "hsl(330, 81%, 60%)", r: 4 }}
+                        stroke="hsl(350, 81%, 60%)"
+                        strokeWidth={3}
+                        dot={{ fill: "hsl(350, 81%, 60%)", r: 5, strokeWidth: 2, stroke: "#fff" }}
+                        fill="url(#salesGradient)"
                         name="销售额"
                       />
                       <Line
                         type="monotone"
                         dataKey="orders"
-                        stroke="hsl(280, 81%, 60%)"
-                        strokeWidth={2}
-                        dot={{ fill: "hsl(280, 81%, 60%)", r: 4 }}
+                        stroke="hsl(340, 75%, 55%)"
+                        strokeWidth={3}
+                        dot={{ fill: "hsl(340, 75%, 55%)", r: 5, strokeWidth: 2, stroke: "#fff" }}
                         name="订单数"
                       />
                     </LineChart>
                   </ChartContainer>
                 ) : (
-                  <div className="h-[300px] flex items-center justify-center text-slate-400">
-                    暂无数据
+                  <div className="h-[300px] flex flex-col items-center justify-center text-slate-400">
+                    <span className="text-4xl mb-2">📊</span>
+                    <p>暂无数据</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Bar Chart */}
+          {/* Bar Chart - 全圆角柱状图+渐变色 */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
+            whileHover={{ scale: 1.01 }}
           >
-            <Card className="border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white via-white to-purple-50/10 dark:from-slate-800 dark:via-slate-800 dark:to-purple-900/10 backdrop-blur-sm">
+            <Card className="border-rose-100 dark:border-rose-900/30 bg-gradient-to-br from-white via-white to-rose-50/20 dark:from-slate-800 dark:via-slate-800 dark:to-rose-900/20 backdrop-blur-sm rounded-3xl hover:shadow-glow-pink transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>月度销售</span>
-                  <Badge variant="outline" className="bg-purple-500/10">
+                  <span className="bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">月度销售</span>
+                  <Badge variant="outline" className="bg-rose-50 border-rose-200 text-rose-600 rounded-full">
                     2025
                   </Badge>
                 </CardTitle>
@@ -451,21 +485,28 @@ export function OverviewViewEnhanced() {
                 {salesTrend.length > 0 ? (
                   <ChartContainer config={barChartConfig} className="h-[300px]">
                     <BarChart data={salesTrend}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
+                      <defs>
+                        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(350, 81%, 60%)" />
+                          <stop offset="100%" stopColor="hsl(340, 75%, 55%)" />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-rose-100 dark:stroke-rose-900/30" />
                       <XAxis dataKey="month" className="text-xs" />
                       <YAxis className="text-xs" />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar
                         dataKey="sales"
-                        fill="hsl(330, 81%, 60%)"
-                        radius={[8, 8, 0, 0]}
+                        fill="url(#barGradient)"
+                        radius={[16, 16, 16, 16]}
                         name="销售额"
                       />
                     </BarChart>
                   </ChartContainer>
                 ) : (
-                  <div className="h-[300px] flex items-center justify-center text-slate-400">
-                    暂无数据
+                  <div className="h-[300px] flex flex-col items-center justify-center text-slate-400">
+                    <span className="text-4xl mb-2">📈</span>
+                    <p>暂无数据</p>
                   </div>
                 )}
               </CardContent>
@@ -599,20 +640,16 @@ export function OverviewViewEnhanced() {
                       className="flex items-center justify-between p-4 rounded-lg bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 transition-colors border border-slate-200/50 dark:border-slate-600/50"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-pink-500/10 flex items-center justify-center overflow-hidden">
-                          {product.productImg ? (
-                            <img 
-                              src={product.productImg.startsWith('http') ? product.productImg : `http://localhost:5173/products/${product.productImg}`} 
-                              alt={product.productName}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <Package className="h-5 w-5 text-pink-600 dark:text-pink-400" />
-                          )}
-                        </div>
+                        <OptimizedImage
+                          src={product.productImg}
+                          alt={product.productName}
+                          className="w-12 h-12 rounded-lg object-cover"
+                          folder="products"
+                          width={48}
+                          height={48}
+                          lazy={true}
+                          fallbackIcon={<Package className="h-5 w-5 text-pink-600 dark:text-pink-400" />}
+                        />
                         <div>
                           <p className="font-medium text-slate-900 dark:text-slate-100">{product.productName}</p>
                           <p className="text-sm text-slate-500 dark:text-slate-400">{product.sales || 0} 销量</p>

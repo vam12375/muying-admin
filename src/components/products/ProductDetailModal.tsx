@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Package, Tag, DollarSign, Layers, TrendingUp, Star, Calendar } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { getBrandLogoUrl } from '@/lib/utils/image';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -59,10 +60,12 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
                 {/* 商品图片 */}
                 <div className="space-y-4">
                   <div className="w-full h-80 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                    <img
-                      src={product.productImg ? (product.productImg.startsWith('http') ? product.productImg : `http://localhost:5173/products/${product.productImg}`) : '/placeholder.png'}
+                    <OptimizedImage
+                      src={product.productImg}
                       alt={product.productName}
                       className="max-w-full max-h-full object-contain"
+                      folder="products"
+                      lazy={false}
                     />
                   </div>
                   {product.images && product.images.length > 0 && (

@@ -502,21 +502,37 @@ export function UsersView() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* 页面标题 */}
+      {/* 页面标题 - 情感化设计 */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            用户管理
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            管理用户账户、余额和交易记录
-          </p>
+        <div className="flex items-center gap-3">
+          <motion.span 
+            className="text-4xl"
+            animate={{ 
+              rotate: [0, 10, -10, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              repeatDelay: 3
+            }}
+          >
+            👥
+          </motion.span>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+              用户管理
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              管理用户账户、余额和交易记录 💰
+            </p>
+          </div>
         </div>
-        <Button onClick={loadUsers} variant="outline" size="sm">
+        <Button onClick={loadUsers} variant="outline" size="sm" className="rounded-full hover:bg-pink-50 hover:border-pink-300">
           <RefreshCw className="h-4 w-4 mr-2" />
           刷新数据
         </Button>
@@ -556,20 +572,24 @@ export function UsersView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          whileHover={{ y: -4, scale: 1.02 }}
         >
-          <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 hover:shadow-lg transition-shadow">
+          <Card className="p-6 bg-gradient-to-br from-pink-400 to-rose-400 text-white border-0 hover:shadow-glow-pink transition-all rounded-3xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm font-medium">总用户数</p>
+                <p className="text-pink-50 text-sm font-medium">总用户数</p>
                 <h3 className="text-3xl font-bold mt-2">{stats.totalUsers}</h3>
-                <p className="text-blue-100 text-xs mt-2 flex items-center gap-1">
+                <p className="text-pink-50 text-xs mt-2 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   今日新增 {stats.newUsersToday}
                 </p>
               </div>
-              <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-                <Users className="h-6 w-6" />
-              </div>
+              <motion.div 
+                className="h-14 w-14 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm"
+                whileHover={{ rotate: 10, scale: 1.1 }}
+              >
+                <Users className="h-7 w-7" />
+              </motion.div>
             </div>
           </Card>
         </motion.div>
@@ -578,19 +598,23 @@ export function UsersView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          whileHover={{ y: -4, scale: 1.02 }}
         >
-          <Card className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white border-0 hover:shadow-lg transition-shadow">
+          <Card className="p-6 bg-gradient-to-br from-emerald-400 to-green-400 text-white border-0 hover:shadow-glow-blue transition-all rounded-3xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm font-medium">活跃用户</p>
+                <p className="text-emerald-50 text-sm font-medium">活跃用户</p>
                 <h3 className="text-3xl font-bold mt-2">{stats.activeUsers}</h3>
-                <p className="text-green-100 text-xs mt-2">
+                <p className="text-emerald-50 text-xs mt-2">
                   占比 {stats.totalUsers > 0 ? ((stats.activeUsers / stats.totalUsers) * 100).toFixed(1) : 0}%
                 </p>
               </div>
-              <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-                <UserCheck className="h-6 w-6" />
-              </div>
+              <motion.div 
+                className="h-14 w-14 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm"
+                whileHover={{ rotate: 10, scale: 1.1 }}
+              >
+                <UserCheck className="h-7 w-7" />
+              </motion.div>
             </div>
           </Card>
         </motion.div>
@@ -599,19 +623,23 @@ export function UsersView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+          whileHover={{ y: -4, scale: 1.02 }}
         >
-          <Card className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 hover:shadow-lg transition-shadow">
+          <Card className="p-6 bg-gradient-to-br from-violet-400 to-purple-400 text-white border-0 hover:shadow-glow-purple transition-all rounded-3xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-100 text-sm font-medium">总余额</p>
+                <p className="text-violet-50 text-sm font-medium">总余额</p>
                 <h3 className="text-3xl font-bold mt-2">{formatAmount(stats.totalBalance)}</h3>
-                <p className="text-purple-100 text-xs mt-2">
+                <p className="text-violet-50 text-xs mt-2">
                   累计充值 {formatAmount(stats.totalRecharge)}
                 </p>
               </div>
-              <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-                <Wallet className="h-6 w-6" />
-              </div>
+              <motion.div 
+                className="h-14 w-14 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm"
+                whileHover={{ rotate: 10, scale: 1.1 }}
+              >
+                <Wallet className="h-7 w-7" />
+              </motion.div>
             </div>
           </Card>
         </motion.div>
@@ -620,20 +648,24 @@ export function UsersView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
+          whileHover={{ y: -4, scale: 1.02 }}
         >
-          <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 hover:shadow-lg transition-shadow">
+          <Card className="p-6 bg-gradient-to-br from-amber-400 to-orange-400 text-white border-0 hover:shadow-glow-pink transition-all rounded-3xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-sm font-medium">总消费</p>
+                <p className="text-amber-50 text-sm font-medium">总消费</p>
                 <h3 className="text-3xl font-bold mt-2">{formatAmount(stats.totalConsumption)}</h3>
-                <p className="text-orange-100 text-xs mt-2 flex items-center gap-1">
+                <p className="text-amber-50 text-xs mt-2 flex items-center gap-1">
                   <TrendingDown className="h-3 w-3" />
                   冻结用户 {stats.frozenUsers}
                 </p>
               </div>
-              <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-                <DollarSign className="h-6 w-6" />
-              </div>
+              <motion.div 
+                className="h-14 w-14 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm"
+                whileHover={{ rotate: 10, scale: 1.1 }}
+              >
+                <DollarSign className="h-7 w-7" />
+              </motion.div>
             </div>
           </Card>
         </motion.div>
@@ -645,18 +677,18 @@ export function UsersView() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <Card className="p-4">
+        <Card className="p-4 rounded-3xl border-pink-100">
           <div className="flex gap-4 items-end flex-wrap">
             <div className="flex-1 min-w-[300px]">
               <label className="text-sm font-medium mb-2 block">搜索</label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pink-400" />
                 <Input
                   placeholder="搜索用户名、昵称、邮箱或手机号..."
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10"
+                  className="pl-10 rounded-full border-pink-100 focus:ring-pink-400"
                 />
               </div>
             </div>
@@ -674,12 +706,12 @@ export function UsersView() {
               </select>
             </div>
 
-            <Button onClick={handleSearch} className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+            <Button onClick={handleSearch} className="bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 rounded-full shadow-glow-pink">
               <Search className="h-4 w-4 mr-2" />
               查询
             </Button>
             
-            <Button variant="outline" onClick={handleReset}>
+            <Button variant="outline" onClick={handleReset} className="rounded-full hover:bg-pink-50 hover:border-pink-300">
               <RefreshCw className="h-4 w-4 mr-2" />
               重置
             </Button>
@@ -687,7 +719,7 @@ export function UsersView() {
             <Button 
               variant="outline" 
               onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-              className={showAdvancedFilter ? 'bg-blue-50 border-blue-200' : ''}
+              className={`rounded-full ${showAdvancedFilter ? 'bg-pink-50 border-pink-300 text-pink-600' : 'hover:bg-pink-50 hover:border-pink-300'}`}
             >
               <Filter className="h-4 w-4 mr-2" />
               高级筛选
@@ -750,22 +782,22 @@ export function UsersView() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <Card className="p-4 bg-gradient-to-r from-pink-50 via-rose-50 to-pink-50 border-pink-200 rounded-3xl shadow-glow-pink">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-medium">
-                    已选择 <span className="text-blue-600 font-bold">{selectedUserIds.size}</span> 个用户
+                    已选择 <span className="text-pink-600 font-bold text-lg">{selectedUserIds.size}</span> 个用户
                   </span>
-                  <div className="h-4 w-px bg-gray-300" />
-                  <Button size="sm" variant="outline" onClick={handleBatchFreeze}>
+                  <div className="h-4 w-px bg-pink-200" />
+                  <Button size="sm" variant="outline" onClick={handleBatchFreeze} className="rounded-full hover:bg-red-50 hover:border-red-300 hover:text-red-600">
                     <Lock className="h-3 w-3 mr-1" />
                     批量冻结
                   </Button>
-                  <Button size="sm" variant="outline" onClick={handleBatchUnfreeze}>
+                  <Button size="sm" variant="outline" onClick={handleBatchUnfreeze} className="rounded-full hover:bg-green-50 hover:border-green-300 hover:text-green-600">
                     <Unlock className="h-3 w-3 mr-1" />
                     批量解冻
                   </Button>
-                  <Button size="sm" variant="outline" onClick={handleBatchExport}>
+                  <Button size="sm" variant="outline" onClick={handleBatchExport} className="rounded-full hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600">
                     <Download className="h-3 w-3 mr-1" />
                     导出数据
                   </Button>
@@ -777,6 +809,7 @@ export function UsersView() {
                     setSelectedUserIds(new Set())
                     setShowBatchActions(false)
                   }}
+                  className="rounded-full hover:bg-pink-100"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -892,9 +925,25 @@ export function UsersView() {
             </Card>
           )
         ) : users.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-muted-foreground">暂无用户数据</p>
+          <Card className="p-12 text-center rounded-3xl border-pink-100">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* 手绘风格母婴插画 */}
+              <div className="text-8xl mb-4">🍼</div>
+              <h3 className="text-xl font-semibold text-slate-700 mb-2">暂无用户数据</h3>
+              <p className="text-muted-foreground mb-6">
+                还没有用户注册，快去推广您的母婴商城吧！
+              </p>
+              <div className="flex items-center justify-center gap-4 text-4xl opacity-30">
+                <span>👶</span>
+                <span>🧸</span>
+                <span>☁️</span>
+                <span>🌙</span>
+              </div>
+            </motion.div>
           </Card>
         ) : viewMode === 'card' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -909,35 +958,50 @@ export function UsersView() {
                 className="cursor-pointer"
               >
                 <Card 
-                  className={`p-6 relative overflow-hidden transition-all ${
-                    selectedUserIds.has(user.userId) ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                  className={`p-6 relative overflow-hidden transition-all rounded-3xl hover:shadow-glow-pink ${
+                    selectedUserIds.has(user.userId) ? 'ring-2 ring-pink-400 bg-pink-50' : 'border-pink-100'
                   }`}
                 >
-                  {/* 选择框 */}
+                  {/* 选择框 - 右上角"..."操作菜单风格 */}
                   <div className="absolute top-4 right-4" onClick={(e) => e.stopPropagation()}>
-                    <button
+                    <motion.button
                       onClick={() => toggleUserSelection(user.userId)}
-                      className="text-gray-400 hover:text-blue-600 transition-colors"
+                      className="text-gray-400 hover:text-pink-500 transition-colors p-1 rounded-full hover:bg-pink-50"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       {selectedUserIds.has(user.userId) ? (
-                        <CheckSquare className="h-5 w-5 text-blue-600" />
+                        <CheckSquare className="h-5 w-5 text-pink-500" />
                       ) : (
                         <Square className="h-5 w-5" />
                       )}
-                    </button>
+                    </motion.button>
                   </div>
 
-                  {/* 用户头像和基本信息 */}
+                  {/* 用户头像和基本信息 - 头像放大+状态圆点 */}
                   <div className="flex items-start gap-4 mb-4">
                     <div className="relative">
-                      <img
+                      <motion.img
                         src={getUserAvatar(user)}
                         alt={user.username}
-                        className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-100"
+                        className="h-20 w-20 rounded-3xl object-cover ring-4 ring-pink-100 shadow-lg"
+                        whileHover={{ scale: 1.05, rotate: 5 }}
                       />
-                      <div className="absolute -bottom-1 -right-1">
-                        {getStatusBadge(user.status)}
-                      </div>
+                      {/* 状态圆点 - 在线/离线 */}
+                      <motion.div 
+                        className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-white ${
+                          user.status === 1 ? 'bg-green-400' : 'bg-gray-400'
+                        }`}
+                        animate={{ 
+                          scale: user.status === 1 ? [1, 1.2, 1] : 1,
+                          opacity: user.status === 1 ? [1, 0.8, 1] : 1
+                        }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-lg truncate">{user.username}</h3>
@@ -948,35 +1012,39 @@ export function UsersView() {
                     </div>
                   </div>
 
-                  {/* 联系方式 */}
+                  {/* 联系方式 - 图标化展示 */}
                   <div className="space-y-2 mb-4 text-sm">
                     {user.email && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Mail className="h-4 w-4 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-muted-foreground bg-pink-50/50 rounded-full px-3 py-1.5">
+                        <Mail className="h-4 w-4 flex-shrink-0 text-pink-500" />
                         <span className="truncate">{user.email}</span>
                       </div>
                     )}
                     {user.phone && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="h-4 w-4 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-muted-foreground bg-pink-50/50 rounded-full px-3 py-1.5">
+                        <Phone className="h-4 w-4 flex-shrink-0 text-pink-500" />
                         <span>{user.phone}</span>
                       </div>
                     )}
                     {user.createTime && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-muted-foreground bg-pink-50/50 rounded-full px-3 py-1.5">
+                        <Calendar className="h-4 w-4 flex-shrink-0 text-pink-500" />
                         <span className="text-xs">{formatTime(user.createTime)}</span>
                       </div>
                     )}
                   </div>
 
-                  {/* 余额信息 */}
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 mb-4">
+                  {/* 余额信息 - 圆润卡片 */}
+                  <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-3xl p-4 mb-4 border border-emerald-100">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600">账户余额</span>
-                      <Wallet className="h-4 w-4 text-green-600" />
+                      <motion.div
+                        whileHover={{ rotate: 10, scale: 1.1 }}
+                      >
+                        <Wallet className="h-5 w-5 text-emerald-600" />
+                      </motion.div>
                     </div>
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
                       {formatAmount(user.balance)}
                     </div>
                     <div className="flex justify-between mt-2 text-xs text-gray-500">
@@ -991,7 +1059,7 @@ export function UsersView() {
                       size="sm"
                       variant="default"
                       onClick={() => handleViewDetail(user)}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                      className="w-full bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 rounded-full shadow-glow-pink"
                     >
                       <User className="h-3 w-3 mr-1" />
                       查看详情
@@ -1001,7 +1069,7 @@ export function UsersView() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleRecharge(user)}
-                        className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600"
+                        className="hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-600 rounded-full"
                       >
                         <DollarSign className="h-3 w-3 mr-1" />
                         充值
@@ -1010,7 +1078,7 @@ export function UsersView() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleAdjustBalance(user)}
-                        className="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600"
+                        className="hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600 rounded-full"
                       >
                         <Wallet className="h-3 w-3 mr-1" />
                         调整
@@ -1019,7 +1087,7 @@ export function UsersView() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleViewHistory(user)}
-                        className="hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600"
+                        className="hover:bg-amber-50 hover:border-amber-300 hover:text-amber-600 rounded-full"
                       >
                         <History className="h-3 w-3 mr-1" />
                         历史
@@ -1028,10 +1096,10 @@ export function UsersView() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleToggleStatus(user)}
-                        className={user.status === 1 
+                        className={`rounded-full ${user.status === 1 
                           ? "hover:bg-red-50 hover:border-red-300 hover:text-red-600"
                           : "hover:bg-green-50 hover:border-green-300 hover:text-green-600"
-                        }
+                        }`}
                       >
                         {user.status === 1 ? (
                           <>
@@ -1217,7 +1285,7 @@ export function UsersView() {
             animate={{ opacity: 1 }}
             className="mt-6"
           >
-            <Card className="p-4">
+            <Card className="p-4 rounded-3xl border-pink-100">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                   显示 {(currentPage - 1) * pageSize + 1} 到 {Math.min(currentPage * pageSize, total)} 条，共 {total} 条
@@ -1228,7 +1296,7 @@ export function UsersView() {
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="disabled:opacity-50"
+                    className="disabled:opacity-50 rounded-full hover:bg-pink-50 hover:border-pink-300"
                   >
                     上一页
                   </Button>
@@ -1241,7 +1309,10 @@ export function UsersView() {
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className={currentPage === page ? "bg-gradient-to-r from-blue-500 to-blue-600" : ""}
+                          className={currentPage === page 
+                            ? "bg-gradient-to-r from-pink-400 to-rose-400 rounded-full shadow-glow-pink" 
+                            : "rounded-full hover:bg-pink-50 hover:border-pink-300"
+                          }
                         >
                           {page}
                         </Button>
@@ -1253,7 +1324,7 @@ export function UsersView() {
                     size="sm"
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage * pageSize >= total}
-                    className="disabled:opacity-50"
+                    className="disabled:opacity-50 rounded-full hover:bg-pink-50 hover:border-pink-300"
                   >
                     下一页
                   </Button>
