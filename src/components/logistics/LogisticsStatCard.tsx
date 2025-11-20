@@ -3,7 +3,7 @@
  * Logistics Statistics Card Component
  * 
  * 带GSAP动画的统计卡片
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

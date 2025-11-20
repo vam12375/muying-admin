@@ -3,7 +3,7 @@
  * Logistics Management View (Redesigned)
  * 
  * 特性：现代化Tab切换、GSAP动画、炫酷视觉效果
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

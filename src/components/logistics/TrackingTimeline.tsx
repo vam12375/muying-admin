@@ -3,7 +3,7 @@
  * Logistics Tracking Timeline Component
  * 
  * 带路径绘制动画的时间轴
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

@@ -2,7 +2,7 @@
  * 物流管理类型定义
  * Logistics Management Type Definitions
  * 
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  * Source: 基于后端 LogisticsStatus 枚举和 Logistics 实体
  */
 

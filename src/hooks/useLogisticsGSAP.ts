@@ -3,7 +3,7 @@
  * Logistics GSAP Animations Hook
  * 
  * 封装所有物流模块的GSAP动画逻辑
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { useEffect, useRef } from 'react';

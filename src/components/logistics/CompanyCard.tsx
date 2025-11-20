@@ -3,7 +3,7 @@
  * Logistics Company Card Component
  * 
  * 带Logo动画的公司卡片
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

@@ -3,7 +3,7 @@
  * Logistics Company Logo Mapping Component
  * 
  * 提供主流物流公司的Logo展示
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import React from 'react';

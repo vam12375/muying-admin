@@ -3,7 +3,7 @@
  * Logistics Tracking Modal (Enhanced)
  * 
  * 特性：时间轴动画、GSAP效果、现代化UI
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

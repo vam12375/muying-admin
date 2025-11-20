@@ -3,7 +3,7 @@
  * Logistics Information Card Component
  * 
  * 带3D悬浮效果的物流卡片
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

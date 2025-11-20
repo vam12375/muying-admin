@@ -3,7 +3,7 @@
  * Logistics Company Tab Component (Redesigned)
  * 
  * 特性：GSAP动画、Logo展示、现代化卡片布局
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';
