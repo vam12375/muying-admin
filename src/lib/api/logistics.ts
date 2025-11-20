@@ -2,7 +2,7 @@
  * 物流管理 API 服务
  * Logistics Management API Service
  * 
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  * Source: 基于 muying-admin-react/src/api/logistics.ts，适配 Next.js fetchApi
  */
 

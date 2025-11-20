@@ -2,7 +2,7 @@
  * 积分管理 API 统一导出
  * Points Management API Exports
  * 
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 // 积分商品

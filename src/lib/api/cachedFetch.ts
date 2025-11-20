@@ -8,7 +8,7 @@
  * - 集成性能监控
  * 
  * Source: 性能优化 - API请求缓存
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { apiCache } from '../utils/apiCache';

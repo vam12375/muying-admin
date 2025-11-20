@@ -7,7 +7,7 @@
  * - 超时控制
  * 
  * Source: 性能优化 - 并行请求
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 interface ParallelFetchOptions {

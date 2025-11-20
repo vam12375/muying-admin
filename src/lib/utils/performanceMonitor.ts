@@ -7,7 +7,7 @@
  * - 记录缓存命中率
  * 
  * Source: 性能优化 - 监控工具
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 interface PerformanceMetrics {

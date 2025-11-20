@@ -3,7 +3,7 @@
  * Points Rules Management API
  * 
  * Source: 基于后端 AdminPointsController
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { fetchApi } from '../index';

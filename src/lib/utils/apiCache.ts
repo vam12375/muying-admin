@@ -7,7 +7,7 @@
  * - 缓存键生成
  * 
  * Source: 性能优化 - 前端缓存层
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 interface CacheEntry<T> {

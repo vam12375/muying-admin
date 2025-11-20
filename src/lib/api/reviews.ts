@@ -3,7 +3,7 @@
  * 对应后端: AdminCommentController (/admin/comments)
  * 
  * 基于 Swagger 接口文档实现
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { fetchApi, type ApiResponse } from './index';
