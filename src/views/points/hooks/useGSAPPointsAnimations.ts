@@ -3,7 +3,7 @@
  * GSAP Points Animations Hook
  * 
  * 功能：封装所有GSAP动画逻辑
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { useEffect, useRef } from 'react';

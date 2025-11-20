@@ -4,7 +4,7 @@
  * 
  * 功能：积分规则的增删改查
  * Source: 对接后端 /admin/points/rule 接口
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

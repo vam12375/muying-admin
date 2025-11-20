@@ -3,7 +3,7 @@
  * Points Rule Edit Modal
  * 
  * 功能：创建和编辑积分规则
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

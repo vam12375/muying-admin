@@ -5,7 +5,7 @@
  * Exchange Records Management View
  * 
  * Source: 基于 muying-admin-react points/exchange.tsx 改造
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { useState, useEffect } from 'react';

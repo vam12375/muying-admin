@@ -3,7 +3,7 @@
  * Points Product Edit Modal
  * 
  * 功能：创建和编辑积分商品
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

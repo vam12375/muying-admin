@@ -3,7 +3,7 @@
  * Adjust Points Modal Component
  * 
  * 功能：管理员调整用户积分（增加/减少）
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

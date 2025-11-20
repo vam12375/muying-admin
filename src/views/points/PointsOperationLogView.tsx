@@ -4,7 +4,7 @@
  * 
  * 功能：查看积分操作日志
  * Source: 对接后端 /admin/points/operation 接口
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

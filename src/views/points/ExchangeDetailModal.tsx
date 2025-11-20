@@ -2,7 +2,7 @@
  * 兑换详情模态框
  * Exchange Detail Modal
  * 
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

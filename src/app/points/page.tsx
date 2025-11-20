@@ -4,7 +4,7 @@
  * 
  * 路由: /points
  * 功能: 用户积分、积分规则、积分商品、兑换记录、操作日志
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { PointsView } from '@/views/points/PointsView';

@@ -3,7 +3,7 @@
  * Points History Modal Component
  * 
  * 功能：查看用户的积分交易历史记录
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

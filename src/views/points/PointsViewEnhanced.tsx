@@ -3,7 +3,7 @@
  * Points Management View - Modern Card Design
  * 
  * 功能：卡片式布局、用户头像、GSAP动画
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

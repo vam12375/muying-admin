@@ -5,7 +5,7 @@
  * User Points Management View - Modern Card Design
  * 
  * 功能：卡片式布局、用户头像、筛选功能、调整积分、历史记录
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { useState, useEffect, useRef } from 'react';

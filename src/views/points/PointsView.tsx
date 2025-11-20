@@ -3,7 +3,7 @@
  * Points Management Main View
  * 
  * 功能：整合所有积分管理子模块
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

@@ -3,7 +3,7 @@
  * Points Management Type Definitions
  * 
  * Source: 基于后端 Entity 定义
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 // ==================== 积分商品 ====================

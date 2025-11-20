@@ -5,7 +5,7 @@
  * Points Products Management View
  * 
  * Source: 基于 muying-admin-react points/product.tsx 改造
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { useState, useEffect } from 'react';

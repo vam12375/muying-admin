@@ -4,7 +4,7 @@
  * 
  * 功能：积分商品的增删改查
  * Source: 对接后端 /admin/points/product 接口
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';
