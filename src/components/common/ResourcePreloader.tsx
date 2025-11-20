@@ -7,7 +7,7 @@
  * - 智能预测用户行为
  * 
  * Source: 性能优化 - 资源预加载
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

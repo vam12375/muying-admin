@@ -7,7 +7,7 @@
  * - 减少CLS（累积布局偏移）
  * 
  * Source: 性能优化 - CLS修复
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { ReactNode } from 'react';

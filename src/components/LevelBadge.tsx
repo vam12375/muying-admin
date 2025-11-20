@@ -3,7 +3,7 @@
  * Level Badge Component with GSAP Animation
  * 
  * 功能：不同等级不同颜色和动画效果，金牌会员以上有持续性动画
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

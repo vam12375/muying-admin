@@ -7,7 +7,7 @@
  * - 减少布局偏移（CLS）
  * 
  * Source: 性能优化 - 骨架屏
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 interface SkeletonProps {

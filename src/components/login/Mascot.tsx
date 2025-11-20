@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  * 2D吉祥物组件 - 躲猫猫的小熊
  * 实现视线跟随和捂眼效果
  * Source: 云端育儿室设计文档 (ui.md)
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  * 
  * 特性：
  * - 输入密码时捂住眼睛

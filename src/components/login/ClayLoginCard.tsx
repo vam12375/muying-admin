@@ -8,7 +8,7 @@ import Mascot from './Mascot';
 /**
  * 黏土风格登录卡片组件 - 云端育儿室版本
  * Source: 云端育儿室设计文档 (d.md, ui.md)
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  * 
  * 设计特点：
  * - 黏土拟态 (Claymorphism) 风格

@@ -3,7 +3,7 @@
  * Comment Management Type Definitions
  * 
  * 对应后端: AdminCommentController
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 /**

@@ -7,7 +7,7 @@ import * as THREE from 'three';
  * 3D黏土风场景组件 - 云端育儿室版本
  * 实现漂浮的马卡龙色球体和交互式守护精灵
  * Source: 云端育儿室设计文档 (d.md, ui.md)
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  * 
  * 特性：
  * - 马卡龙色系的3D漂浮球体

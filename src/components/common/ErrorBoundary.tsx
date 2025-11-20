@@ -7,7 +7,7 @@
  * - 防止整个应用崩溃
  * 
  * Source: 性能优化 - 错误处理
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 'use client';

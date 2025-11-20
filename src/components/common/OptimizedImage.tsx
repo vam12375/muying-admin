@@ -11,7 +11,7 @@
  * - 自动添加时间戳防止缓存
  * 
  * Source: 性能优化组件
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { useState, useEffect, useRef } from 'react';

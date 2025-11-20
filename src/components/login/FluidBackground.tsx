@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
  * 流体渐变背景组件
  * 实现柔和的渐变流动效果
  * Source: 云端育儿室设计文档 (ui.md)
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  * 
  * 使用CSS动画实现，性能优于Canvas
  */
