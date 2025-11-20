@@ -10,7 +10,7 @@
  * - 评价删除
  * - 统计数据展示
  * 
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 "use client";

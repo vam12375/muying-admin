@@ -7,7 +7,7 @@
  * - 错误处理
  * 
  * Source: 性能优化 - Dashboard数据加载
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 import { useState, useEffect } from 'react';

@@ -3,7 +3,7 @@
  * 用于在Dashboard中展示商品详情图管理功能
  * 
  * Source: 商品管理模块扩展
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 "use client";
 

@@ -9,7 +9,7 @@
  * - 渐变色和玻璃态效果
  * 
  * Source: 21st.dev MCP + 现有 API 集成
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 "use client";

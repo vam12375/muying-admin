@@ -3,7 +3,7 @@
  * Reviews Management View - GSAP Animated
  * 
  * 使用 GSAP 实现丰富的动画效果
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 "use client";
