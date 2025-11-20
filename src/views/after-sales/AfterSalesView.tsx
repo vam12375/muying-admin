@@ -422,28 +422,28 @@ export function AfterSalesView() {
       {/* 退款列表 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="w-[180px] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   退款单号
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="w-[180px] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   订单号
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="w-[120px] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   用户
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="w-[100px] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   退款金额
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="w-[100px] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   状态
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="w-[140px] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   申请时间
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="w-[280px] px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                   操作
                 </th>
               </tr>
@@ -470,13 +470,13 @@ export function AfterSalesView() {
 
                   return (
                     <tr key={refundId} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900 font-mono">
+                      <td className="px-4 py-3 text-sm text-gray-900 font-mono truncate" title={getRefundNo(refund)}>
                         {getRefundNo(refund)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 font-mono">
+                      <td className="px-4 py-3 text-sm text-gray-900 font-mono truncate" title={getOrderNo(refund)}>
                         {getOrderNo(refund)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-gray-600 truncate" title={getUsername(refund)}>
                         {getUsername(refund)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 font-medium">
@@ -494,7 +494,7 @@ export function AfterSalesView() {
                           {statusInfo.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-gray-600 truncate" title={formatTime(getCreateTime(refund))}>
                         {formatTime(getCreateTime(refund))}
                       </td>
                       <td className="px-4 py-3 text-right">
