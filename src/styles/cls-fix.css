@@ -7,7 +7,7 @@
  * - 字体加载优化
  * 
  * Source: 性能优化 - CLS修复
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 /* 防止字体加载导致的布局偏移 */

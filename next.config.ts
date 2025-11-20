@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   /**
    * 图片优化配置
    * Source: 性能优化 - 图片加载优化
-   * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+   * 
    */
   images: {
     // 允许的外部图片域名

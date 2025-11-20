@@ -13,7 +13,7 @@ import { ToastProvider } from "@/components/ui/toast";
  * - 全局Toast通知
  * 
  * Source: 性能优化 - 布局优化
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 
 export const metadata: Metadata = {
