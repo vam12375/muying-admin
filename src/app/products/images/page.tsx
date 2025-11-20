@@ -8,7 +8,7 @@
  * - 支持图片预览和删除
  * 
  * Source: 商品管理模块扩展
- * 遵循协议: AURA-X-KYS (KISS/YAGNI/SOLID)
+ * 
  */
 "use client";
 
